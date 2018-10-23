@@ -26,9 +26,15 @@ class Grab {
     
     init() {
         displayId = CGMainDisplayID()
-        let bounds = CGDisplayBounds(displayId)
-        width = Int(bounds.width)
-        height = Int(bounds.height)
+
+        //        let bounds = CGDisplayBounds(displayId)
+        //        width = Int(bounds.width)
+        //        height = Int(bounds.height)
+
+        // determine the physical pixel resolution.
+        let shot = CGDisplayCreateImage(displayId)!
+        width = shot.width
+        height = shot.height
     }
 
     func run() {
