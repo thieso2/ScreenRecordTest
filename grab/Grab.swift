@@ -11,31 +11,39 @@ import CoreMedia
 import AppKit
 import CoreImage
 
+
+protocol GrabDelegate {
+    func screenGrabbed(ioSurface: IOSurfaceRef)
+}
+
 class Grab {
+    var delegate:GrabDelegate?
     var displayStream: CGDisplayStream?
     let backgroundQueue = DispatchQueue(label: "de.tmp8", qos: .background, target: nil)
+    let width: Int
+    let height: Int
+    let displayId: CGDirectDisplayID
     
-    func run(previewCallback: @escaping (_ image: NSImage) -> Void) {
-        let displayId = CGMainDisplayID()
+    init() {
+        displayId = CGMainDisplayID()
         let bounds = CGDisplayBounds(displayId)
-        
+        width = Int(bounds.width)
+        height = Int(bounds.height)
+    }
+
+    func run() {
         displayStream = CGDisplayStream(
             dispatchQueueDisplay: displayId,
-            outputWidth: Int(bounds.width),
-            outputHeight: Int(bounds.height),
+            outputWidth: width,
+            outputHeight: height,
             pixelFormat: Int32(k32BGRAPixelFormat),
             properties: nil,
             queue: backgroundQueue) { (status, displayTime, frameSurface, updateRef) in
                 guard let surface = frameSurface else { return }
-                
-                let ciImage = CIImage(ioSurface: surface)
-                let rep = NSCIImageRep(ciImage: ciImage)
-                let nsImage = NSImage(size: ciImage.extent.size)
-                nsImage.addRepresentation(rep)
-                
-                previewCallback(nsImage)
+                self.delegate?.screenGrabbed(ioSurface: surface)
         }
         
         displayStream?.start()
     }
 }
+
