@@ -10,6 +10,7 @@
 		F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F088134B217DE4EF003929A6 /* AppDelegate.swift */; };
 		F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F088134D217DE4F0003929A6 /* Assets.xcassets */; };
 		F0881351217DE4F0003929A6 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = F088134F217DE4F0003929A6 /* MainMenu.xib */; };
+		F088135A217DE500003929A6 /* Grab.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0881359217DE500003929A6 /* Grab.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -19,6 +20,7 @@
 		F0881350217DE4F0003929A6 /* Base */ = {isa = PBXFileReference; lastKnownFileType = file.xib; name = Base; path = Base.lproj/MainMenu.xib; sourceTree = "<group>"; };
 		F0881352217DE4F0003929A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F0881353217DE4F0003929A6 /* grab.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = grab.entitlements; sourceTree = "<group>"; };
+		F0881359217DE500003929A6 /* Grab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grab.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -51,6 +53,7 @@
 		F088134A217DE4EF003929A6 /* grab */ = {
 			isa = PBXGroup;
 			children = (
+				F0881359217DE500003929A6 /* Grab.swift */,
 				F088134B217DE4EF003929A6 /* AppDelegate.swift */,
 				F088134D217DE4F0003929A6 /* Assets.xcassets */,
 				F088134F217DE4F0003929A6 /* MainMenu.xib */,
@@ -92,6 +95,11 @@
 				TargetAttributes = {
 					F0881347217DE4EF003929A6 = {
 						CreatedOnToolsVersion = 10.0;
+						SystemCapabilities = {
+							com.apple.Sandbox = {
+								enabled = 0;
+							};
+						};
 					};
 				};
 			};
@@ -131,6 +139,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */,
+				F088135A217DE500003929A6 /* Grab.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -267,7 +276,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = grab/grab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 27KPQRH598;
@@ -286,7 +294,6 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_ENTITLEMENTS = grab/grab.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
 				DEVELOPMENT_TEAM = 27KPQRH598;

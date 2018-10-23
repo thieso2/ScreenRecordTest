@@ -13,15 +13,17 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     @IBOutlet weak var window: NSWindow!
 
-
+    @IBOutlet weak var liveImage: NSImageView!
+    
+    var grab = Grab()
+    
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        // Insert code here to initialize your application
+        grab.run { (image) in
+            DispatchQueue.main.async {
+                self.liveImage.image = image
+                self.liveImage.needsDisplay = true
+            }
+        }
     }
-
-    func applicationWillTerminate(_ aNotification: Notification) {
-        // Insert code here to tear down your application
-    }
-
-
 }
 
