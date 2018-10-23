@@ -19,7 +19,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var sampleBufferDisplay: DisplayLayer!
     
     var grab: Grab!
-    var compress: Compress!
+    var compress: Compress?
     
     var framesGrabbed = 0 {
         didSet {
@@ -43,7 +43,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         grab.delegate = self
         
         compress = Compress(width: grab.width, height: grab.height)
-        compress.delegate = self
+        compress?.delegate = self
         
         grab.run()
     }
@@ -63,7 +63,7 @@ extension AppDelegate: CompressDelegate {
 extension AppDelegate: GrabDelegate {
     func screenGrabbed(ioSurface: IOSurfaceRef) {
         framesGrabbed += 1
-        compress.compressFrame(surface: ioSurface)
+        compress?.compressFrame(surface: ioSurface)
         
         // DISPLAY FRAME
         let ciImage = CIImage(ioSurface: ioSurface)
