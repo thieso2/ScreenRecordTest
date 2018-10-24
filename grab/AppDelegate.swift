@@ -29,6 +29,14 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         windowTitleUpdaterTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(self.updateWindowTitle), userInfo: nil, repeats: true)
     }
     
+    @IBAction func startstop(_ sender: Any) {
+        if grab.running {
+            grab.stop()
+        } else {
+            grab.start()
+        }
+    }
+    
     @objc func updateWindowTitle() {
         grabbedWindow.title = "Grabbed: \(framesGrabbed)"
         compressedWindow.title = "Compressed: \(framesCompressed)"
@@ -42,7 +50,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         
         grab = Grab()
         grab.delegate = self
-        grab.run()
+        
+        grab.start()
 
         compress = Compress(width: grab.width, height: grab.height)
         compress?.delegate = self
@@ -80,34 +89,25 @@ extension AppDelegate: CompressDelegate {
     }
 }
 
-let displayId = CGMainDisplayID()
-let cs = CGDisplayCopyColorSpace(displayId)
-
+let screenColorSpace = CGDisplayCopyColorSpace(CGMainDisplayID())
 
 extension AppDelegate: GrabDelegate {
     
-    func convertCIImageToCGImage(inputImage: CIImage) -> CGImage? {
-        let context = CIContext(options: nil)
-        if let cgImage = context.createCGImage(inputImage, from: inputImage.extent) {
-            return cgImage
-        }
-        return nil
-    }
-
     func screenGrabbed(ioSurface: IOSurfaceRef) {
         framesGrabbed += 1
         compress?.compressFrame(surface: ioSurface)
         
-        // DISPLAY FRAME
+        // display frame
         let ciImage = CIImage(ioSurface: ioSurface)
-        let cgImage = convertCIImageToCGImage(inputImage: ciImage)
-        let iccCgImage = cgImage?.copy(colorSpace: cs)
-        let nsImage = NSImage(cgImage: iccCgImage!, size: ciImage.extent.size)
 
-//        let rep = NSCIImageRep(ciImage: ciImage)
-////        let a = CGImageCreateCopyWithColorSpace(CGImageRef  , cs)
-//        let nsImage = NSImage(size: ciImage.extent.size)
-//        nsImage.addRepresentation(rep)
+        let context = CIContext(options: nil)
+        var cgImage = context.createCGImage(ciImage, from: ciImage.extent)!
+
+        // comment out the next line to see the image "as is" without
+        // the screen color profile applied
+        cgImage = cgImage.copy(colorSpace: screenColorSpace)!
+
+        let nsImage = NSImage(cgImage: cgImage, size: ciImage.extent.size)
         
         DispatchQueue.main.async {
             self.liveImage.image = nsImage

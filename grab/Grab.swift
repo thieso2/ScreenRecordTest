@@ -31,13 +31,14 @@ class Grab {
         //        width = Int(bounds.width)
         //        height = Int(bounds.height)
 
-        // determine the physical pixel resolution.
+        // determine the internal render resolution.
         let shot = CGDisplayCreateImage(displayId)!
         width = shot.width
         height = shot.height
-    }
+        
+//        width = 2560
+//        height = 1600
 
-    func run() {
         displayStream = CGDisplayStream(
             dispatchQueueDisplay: displayId,
             outputWidth: width,
@@ -48,8 +49,19 @@ class Grab {
                 guard let surface = frameSurface else { return }
                 self.delegate?.screenGrabbed(ioSurface: surface)
         }
-        
+    }
+
+    var running = false
+    func start() {
+        guard !running else { return }
         displayStream?.start()
+        running = true
+    }
+
+    func stop() {
+        guard running else { return }
+        displayStream?.stop()
+        running = false
     }
 }
 

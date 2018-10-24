@@ -44,6 +44,7 @@ class Compress {
         assert(status == noErr)
         
         vtCompressionSession = compressionSesionOut.pointee.unsafelyUnwrapped
+//        VTSessionSetProperty(vtCompressionSession, key: kVTCompressionPropertyKey_ICCProfile, value: <#T##CFTypeRef?#>)
     }
     
     var frameNumber = 0
