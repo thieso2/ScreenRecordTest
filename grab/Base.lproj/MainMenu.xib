@@ -34,9 +34,14 @@
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="4je-JR-u6R"/>
-                            <menuItem title="Hide grab" keyEquivalent="h" id="Olw-nP-bQN">
+                            <menuItem title="close" keyEquivalent="w" id="CME-Hw-Wtq">
                                 <connections>
-                                    <action selector="hide:" target="-1" id="PnN-Uc-m68"/>
+                                    <action selector="performClose:" target="-1" id="vYP-fL-pFj"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="Hide grab" keyEquivalent="h" id="EYs-z4-pic">
+                                <connections>
+                                    <action selector="hide:" target="-1" id="4ji-cE-w8C"/>
                                 </connections>
                             </menuItem>
                             <menuItem title="Hide Others" keyEquivalent="h" id="Vdr-fp-XzO">
@@ -60,38 +65,18 @@
                         </items>
                     </menu>
                 </menuItem>
-                <menuItem title="File" id="dMs-cI-mzQ">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Edit" id="5QF-Oa-p0T">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="Format" id="jxT-CU-nIS">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
-                <menuItem title="View" id="H8h-7b-M4v">
-                    <modifierMask key="keyEquivalentModifierMask"/>
-                </menuItem>
                 <menuItem title="Window" id="aUF-d1-5bR">
                     <modifierMask key="keyEquivalentModifierMask"/>
                     <menu key="submenu" title="Window" systemMenu="window" id="Td7-aD-5lo">
                         <items>
-                            <menuItem title="Minimize" keyEquivalent="m" id="OY7-WF-poV">
+                            <menuItem title="show grab" keyEquivalent="1" id="czC-Ja-pck">
                                 <connections>
-                                    <action selector="performMiniaturize:" target="-1" id="VwT-WD-YPe"/>
+                                    <action selector="showGrab:" target="Voe-Tx-rLC" id="8H1-zA-jj8"/>
                                 </connections>
                             </menuItem>
-                            <menuItem title="Zoom" id="R4o-n2-Eq4">
-                                <modifierMask key="keyEquivalentModifierMask"/>
+                            <menuItem title="show compress" keyEquivalent="2" id="9Am-nR-w1q">
                                 <connections>
-                                    <action selector="performZoom:" target="-1" id="DIl-cC-cCs"/>
-                                </connections>
-                            </menuItem>
-                            <menuItem isSeparatorItem="YES" id="eu3-7i-yIM"/>
-                            <menuItem title="Bring All to Front" id="LE2-aR-0XJ">
-                                <modifierMask key="keyEquivalentModifierMask"/>
-                                <connections>
-                                    <action selector="arrangeInFront:" target="-1" id="DRN-fu-gQh"/>
+                                    <action selector="showCompress:" target="Voe-Tx-rLC" id="itA-BT-l9b"/>
                                 </connections>
                             </menuItem>
                         </items>
@@ -101,13 +86,13 @@
                     <modifierMask key="keyEquivalentModifierMask"/>
                 </menuItem>
             </items>
-            <point key="canvasLocation" x="-465" y="-764"/>
+            <point key="canvasLocation" x="-473" y="-941"/>
         </menu>
         <window title="grabbed" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" releasedWhenClosed="NO" animationBehavior="default" id="QvC-M9-y7g">
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="335" y="390" width="480" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -125,7 +110,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="163" y="199" width="480" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
             <view key="contentView" id="N6i-VQ-qNr">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -138,5 +123,67 @@
             </view>
             <point key="canvasLocation" x="107" y="-502"/>
         </window>
+        <menuItem title="File" id="efK-FP-OI5">
+            <modifierMask key="keyEquivalentModifierMask"/>
+            <menu key="submenu" title="File" id="FOX-pE-G5O">
+                <items>
+                    <menuItem title="New" keyEquivalent="n" id="nAO-Vd-0gu">
+                        <connections>
+                            <action selector="newDocument:" target="-1" id="g5c-UC-4hE"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem title="Open…" keyEquivalent="o" id="GGw-UH-rkm">
+                        <connections>
+                            <action selector="openDocument:" target="-1" id="S8O-fU-iif"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem title="Open Recent" id="shb-m5-ntj">
+                        <modifierMask key="keyEquivalentModifierMask"/>
+                        <menu key="submenu" title="Open Recent" systemMenu="recentDocuments" id="KN7-PK-RY1">
+                            <items>
+                                <menuItem title="Clear Menu" id="tUf-vf-JCv">
+                                    <connections>
+                                        <action selector="clearRecentDocuments:" target="-1" id="0zW-qf-4Nl"/>
+                                    </connections>
+                                </menuItem>
+                            </items>
+                        </menu>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES" id="hsb-Ut-m7Z"/>
+                    <menuItem title="Close" keyEquivalent="w" id="Ecx-ss-aQp">
+                        <connections>
+                            <action selector="performClose:" target="-1" id="1jf-bK-Ywh"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem title="Save" keyEquivalent="s" id="wno-sh-FBG">
+                        <connections>
+                            <action selector="saveDocument:" target="-1" id="anU-fi-BnA"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem title="Save As…" keyEquivalent="S" id="Ikj-cy-bz0">
+                        <connections>
+                            <action selector="saveDocumentAs:" target="-1" id="Hr6-XO-cAn"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem title="Revert to Saved" id="2ty-9f-xdO">
+                        <modifierMask key="keyEquivalentModifierMask"/>
+                        <connections>
+                            <action selector="revertDocumentToSaved:" target="-1" id="NRL-pD-lQF"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem isSeparatorItem="YES" id="8yk-wo-IOb"/>
+                    <menuItem title="Page Setup…" keyEquivalent="P" id="JXT-Ac-0Xz">
+                        <connections>
+                            <action selector="runPageLayout:" target="-1" id="Gs1-uG-pRl"/>
+                        </connections>
+                    </menuItem>
+                    <menuItem title="Print…" keyEquivalent="p" id="NH5-hg-NCO">
+                        <connections>
+                            <action selector="print:" target="-1" id="2Y4-C2-HUm"/>
+                        </connections>
+                    </menuItem>
+                </items>
+            </menu>
+        </menuItem>
     </objects>
 </document>

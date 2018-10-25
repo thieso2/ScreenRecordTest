@@ -25,9 +25,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     var framesGrabbed = 0
     var framesCompressed = 0
     
-    var windowTitleUpdaterTimer: Timer?
-    func startWindowTitleUpdater() {
-        windowTitleUpdaterTimer = Timer.scheduledTimer(timeInterval: 1.0, target: self, selector: #selector(self.updateWindowTitle), userInfo: nil, repeats: true)
+    @IBAction func showGrab(_ sender: Any) {
+        grabbedWindow.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func showCompress(_ sender: Any) {
+        compressedWindow.makeKeyAndOrderFront(self)
+
     }
     
     @IBAction func startstop(_ sender: Any) {
@@ -42,14 +46,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
-    @objc func updateWindowTitle() {
-        grabbedWindow.title = "Grabbed: \(framesGrabbed)"
-        compressedWindow.title = "Compressed: \(framesCompressed)"
-    }
-    
     func setup() {
-        startWindowTitleUpdater()
-
         grab = Grab()
         grab.delegate = self
         
@@ -66,6 +63,9 @@ extension AppDelegate: CompressDelegate {
     func frameCompressed(cmSampleBuffer: CMSampleBuffer) {
         framesCompressed += 1
         writer?.writeSampleBuffer(sampleBuffer: cmSampleBuffer)
+
+        guard compressedWindow.isVisible else { return }
+
         sampleBufferDisplay.enqueue(cMSamplebuffer: cmSampleBuffer)
     }
 }
@@ -77,6 +77,8 @@ extension AppDelegate: GrabDelegate {
     func screenGrabbed(ioSurface: IOSurfaceRef) {
         framesGrabbed += 1
         compress?.compressFrame(surface: ioSurface)
+        
+        guard grabbedWindow.isVisible else { return }
         
         // display frame
         let ciImage = CIImage(ioSurface: ioSurface)
