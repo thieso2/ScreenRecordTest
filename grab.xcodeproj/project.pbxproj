@@ -11,6 +11,7 @@
 		F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F088134D217DE4F0003929A6 /* Assets.xcassets */; };
 		F0881351217DE4F0003929A6 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = F088134F217DE4F0003929A6 /* MainMenu.xib */; };
 		F088135A217DE500003929A6 /* Grab.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0881359217DE500003929A6 /* Grab.swift */; };
+		F09A3C592181BF000000DEA7 /* Writer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F09A3C582181BF000000DEA7 /* Writer.swift */; };
 		F0AB06A2217F2B760010B619 /* Compress.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AB06A1217F2B760010B619 /* Compress.swift */; };
 		F0AB06A4217F2EAF0010B619 /* DisplayLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = F0AB06A3217F2EAF0010B619 /* DisplayLayer.swift */; };
 /* End PBXBuildFile section */
@@ -23,6 +24,7 @@
 		F0881352217DE4F0003929A6 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F0881353217DE4F0003929A6 /* grab.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = grab.entitlements; sourceTree = "<group>"; };
 		F0881359217DE500003929A6 /* Grab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Grab.swift; sourceTree = "<group>"; };
+		F09A3C582181BF000000DEA7 /* Writer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Writer.swift; sourceTree = "<group>"; };
 		F0AB06A1217F2B760010B619 /* Compress.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Compress.swift; sourceTree = "<group>"; };
 		F0AB06A3217F2EAF0010B619 /* DisplayLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DisplayLayer.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -65,6 +67,7 @@
 				F088134F217DE4F0003929A6 /* MainMenu.xib */,
 				F0881352217DE4F0003929A6 /* Info.plist */,
 				F0881353217DE4F0003929A6 /* grab.entitlements */,
+				F09A3C582181BF000000DEA7 /* Writer.swift */,
 			);
 			path = grab;
 			sourceTree = "<group>";
@@ -145,6 +148,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				F0AB06A4217F2EAF0010B619 /* DisplayLayer.swift in Sources */,
+				F09A3C592181BF000000DEA7 /* Writer.swift in Sources */,
 				F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */,
 				F088135A217DE500003929A6 /* Grab.swift in Sources */,
 				F0AB06A2217F2B760010B619 /* Compress.swift in Sources */,

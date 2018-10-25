@@ -36,8 +36,7 @@ class Grab {
         width = shot.width
         height = shot.height
         
-//        width = 2560
-//        height = 1600
+        print("\(width)x\(height)")
 
         displayStream = CGDisplayStream(
             dispatchQueueDisplay: displayId,

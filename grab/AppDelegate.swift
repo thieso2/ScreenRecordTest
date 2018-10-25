@@ -20,7 +20,8 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     var grab: Grab!
     var compress: Compress?
-    
+    var writer: Writer?
+
     var framesGrabbed = 0
     var framesCompressed = 0
     
@@ -31,9 +32,13 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     
     @IBAction func startstop(_ sender: Any) {
         if grab.running {
+            writer?.close()
             grab.stop()
         } else {
             grab.start()
+            writer = Writer(
+                outputURL: URL(fileURLWithPath: "/tmp/grab-\(Date()).mov"),
+                formatHint: compress!.formatHint!)
         }
     }
     
@@ -41,50 +46,26 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         grabbedWindow.title = "Grabbed: \(framesGrabbed)"
         compressedWindow.title = "Compressed: \(framesCompressed)"
     }
-
     
-    func startAll() {
+    func setup() {
         startWindowTitleUpdater()
 
-//        screenshotLoop()
-        
         grab = Grab()
         grab.delegate = self
         
-        grab.start()
-
         compress = Compress(width: grab.width, height: grab.height)
         compress?.delegate = self
-        
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
-        startAll()
+        setup()
     }
-    
-    
-    var timer: Timer?
-    func screenshotLoop() {
-        timer = Timer.scheduledTimer(timeInterval: 1.0/10, target: self, selector: #selector(self.updateCounting), userInfo: nil, repeats: true)
-    }
-    
-    @objc func updateCounting() {
-        framesGrabbed += 1
-        self.liveImage.image = screenshot()
-        self.liveImage.needsDisplay = true
-    }
-    
-    func screenshot() -> NSImage {
-        let displayID = CGMainDisplayID()
-        let imageRef = CGDisplayCreateImage(displayID)
-        return NSImage(cgImage: imageRef!, size: NSSize(width: imageRef!.width, height: imageRef!.height))
-    }
-
 }
 
 extension AppDelegate: CompressDelegate {
-    func frameCompressd(cmSampleBuffer: CMSampleBuffer) {
+    func frameCompressed(cmSampleBuffer: CMSampleBuffer) {
         framesCompressed += 1
+        writer?.writeSampleBuffer(sampleBuffer: cmSampleBuffer)
         sampleBufferDisplay.enqueue(cMSamplebuffer: cmSampleBuffer)
     }
 }

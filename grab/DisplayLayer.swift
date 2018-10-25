@@ -12,11 +12,11 @@ import AVKit
 
 
 class DisplayLayer: NSView {
-    var aVSampleBufferDisplay: AVSampleBufferDisplayLayer = AVSampleBufferDisplayLayer()
+    var aVSampleBufferDisplay = AVSampleBufferDisplayLayer()
     
     required init?(coder decoder: NSCoder) {
         super.init(coder: decoder)!
-        self.wantsLayer = true
+        wantsLayer = true
         layer!.addSublayer(aVSampleBufferDisplay)
         aVSampleBufferDisplay.frame = layer!.bounds
     }
@@ -34,5 +34,3 @@ class DisplayLayer: NSView {
         aVSampleBufferDisplay.enqueue(cMSamplebuffer)
     }
 }
-
-
