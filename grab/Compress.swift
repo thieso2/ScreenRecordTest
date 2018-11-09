@@ -31,11 +31,12 @@ class Compress {
             codecType: codec,
             width: Int32(width),
             height: Int32(height),
-            extensions: [
-                kCMFormatDescriptionExtension_ColorPrimaries: kCMFormatDescriptionColorPrimaries_ITU_R_709_2,
-                kCMFormatDescriptionExtension_TransferFunction: kCMFormatDescriptionTransferFunction_ITU_R_709_2,
-                kCMFormatDescriptionExtension_YCbCrMatrix: kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2,
-                ] as CFDictionary,
+            extensions: nil,
+//            [
+//                kCMFormatDescriptionExtension_ColorPrimaries: kCMFormatDescriptionColorPrimaries_ITU_R_709_2,
+//                kCMFormatDescriptionExtension_TransferFunction: kCMFormatDescriptionTransferFunction_ITU_R_709_2,
+//                kCMFormatDescriptionExtension_YCbCrMatrix: kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2,
+//                ] as CFDictionary,
             formatDescriptionOut: &formatHint)
 
         let compressionSesionOut = UnsafeMutablePointer<VTCompressionSession?>.allocate(capacity: 1)
@@ -61,27 +62,23 @@ class Compress {
         
         vtCompressionSession = compressionSesionOut.pointee.unsafelyUnwrapped
         
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_ColorPrimaries,
-                             value: kCVImageBufferColorPrimaries_ITU_R_709_2))
-
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_TransferFunction,
-                             value: kCVImageBufferTransferFunction_ITU_R_709_2))
-
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_YCbCrMatrix,
-                             value: kCVImageBufferYCbCrMatrix_ITU_R_709_2))
+//        print(VTSessionSetProperty(vtCompressionSession,
+//                             key: kVTCompressionPropertyKey_ColorPrimaries,
+//                             value: kCVImageBufferColorPrimaries_ITU_R_709_2))
+//
+//        print(VTSessionSetProperty(vtCompressionSession,
+//                             key: kVTCompressionPropertyKey_TransferFunction,
+//                             value: kCVImageBufferTransferFunction_ITU_R_709_2))
+//
+//        print(VTSessionSetProperty(vtCompressionSession,
+//                             key: kVTCompressionPropertyKey_YCbCrMatrix,
+//                             value: kCVImageBufferYCbCrMatrix_ITU_R_709_2))
     }
     
     var frameNumber = 0
     
-    func compressFrame(surface: IOSurfaceRef) {
+    func compressFrame(pixelBuffer: CVImageBuffer) {
         
-        let pixBufferPointer = UnsafeMutablePointer<Unmanaged<CVPixelBuffer>?>.allocate(capacity: 1)
-        CVPixelBufferCreateWithIOSurface(nil, surface, nil, pixBufferPointer)
-        let pixelBuffer = (pixBufferPointer.pointee?.takeRetainedValue())!
-
         let status = VTCompressionSessionEncodeFrame(
             vtCompressionSession,
             imageBuffer: pixelBuffer,

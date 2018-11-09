@@ -46,15 +46,32 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         }
     }
     
+    var timer: Timer?
+    
     func setup() {
         grab = Grab()
         grab.delegate = self
         
         compress = Compress(width: grab.width, height: grab.height)
         compress?.delegate = self
+
+        timer = Timer.scheduledTimer(
+            timeInterval: 1.0,
+            target: self,
+            selector: #selector(self.printInfo),
+            userInfo: nil, repeats: true)
+    }
+    
+    @objc
+    func printInfo() {
+        print(framesGrabbed, framesCompressed)
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+        for w in Windows.all {
+            print(w.appName, w.name, w.number, w.pid, w.bounds)
+        }
+
         setup()
     }
 }
@@ -62,6 +79,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 extension AppDelegate: CompressDelegate {
     func frameCompressed(cmSampleBuffer: CMSampleBuffer) {
         framesCompressed += 1
+        
         writer?.writeSampleBuffer(sampleBuffer: cmSampleBuffer)
 
         guard compressedWindow.isVisible else { return }
@@ -70,28 +88,28 @@ extension AppDelegate: CompressDelegate {
     }
 }
 
-let screenColorSpace = CGDisplayCopyColorSpace(CGMainDisplayID())
+
+var retainedCGImages = [CGImage]()
 
 extension AppDelegate: GrabDelegate {
-    
-    func screenGrabbed(ioSurface: IOSurfaceRef) {
+    func screenGrabbed(cgImage: CGImage) {
         framesGrabbed += 1
-        compress?.compressFrame(surface: ioSurface)
+        
+        retainedCGImages.append(cgImage)
+
+        if let pix = cgImage.pixelBuffer() {
+            compress?.compressFrame(pixelBuffer: pix)
+        }
+        
+        // need to retain the cgimage thats still compressing. 
+        if retainedCGImages.count > 20 {
+            retainedCGImages.removeFirst()
+        }
         
         guard grabbedWindow.isVisible else { return }
-        
-        // display frame
-        let ciImage = CIImage(ioSurface: ioSurface)
 
-        let context = CIContext(options: nil)
-        var cgImage = context.createCGImage(ciImage, from: ciImage.extent)!
+        let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
 
-        // comment out the next line to see the image "as is" without
-        // the screen color profile applied
-//        cgImage = cgImage.copy(colorSpace: screenColorSpace)!
-
-        let nsImage = NSImage(cgImage: cgImage, size: ciImage.extent.size)
-        
         DispatchQueue.main.async {
             self.liveImage.image = nsImage
             self.liveImage.needsDisplay = true
@@ -99,3 +117,34 @@ extension AppDelegate: GrabDelegate {
     }
 }
 
+extension CGImage {
+    
+    func pixelBuffer() -> CVPixelBuffer? {
+
+        var pxbuffer: CVPixelBuffer?
+
+        guard let dataProvider = dataProvider else {
+            return nil
+        }
+        
+//        let dataFromImageDataProvider = CFDataCreateMutableCopy(kCFAllocatorDefault, 0, dataProvider.data)
+        
+        CVPixelBufferCreateWithBytes(
+            kCFAllocatorDefault,
+            width,
+            height,
+            kCVPixelFormatType_32BGRA,
+//            CFDataGetMutableBytePtr(dataFromImageDataProvider),
+            CFDataGetMutableBytePtr(dataProvider.data as! CFMutableData),
+            bytesPerRow,
+            nil,
+            nil,
+            nil,
+            &pxbuffer
+        )
+        
+        assert(pxbuffer != nil)
+        
+        return pxbuffer
+    }
+}

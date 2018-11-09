@@ -15,9 +15,20 @@ class Writer {
     let avAssetWriter: AVAssetWriter
     
     init(outputURL: URL, formatHint: CMFormatDescription) {
+//        let compressionSettings = [
+//            AVVideoColorPrimariesKey:AVVideoColorPrimaries_ITU_R_709_2,
+//            AVVideoTransferFunctionKey:AVVideoTransferFunction_ITU_R_709_2,
+//            AVVideoYCbCrMatrixKey:AVVideoYCbCrMatrix_ITU_R_709_2
+//        ]
+//
+//        let videoOutputSettings: [String:Any] = [
+//            AVVideoCodecKey: AVVideoCodecType.h264,
+//            AVVideoColorPropertiesKey: compressionSettings
+//        ]
+        
         avAssetWriterInput = AVAssetWriterInput(
             mediaType: AVMediaType.video,
-            outputSettings: nil,
+            outputSettings: nil, // videoOutputSettings,
             sourceFormatHint: formatHint)
         
         avAssetWriter = try! AVAssetWriter(

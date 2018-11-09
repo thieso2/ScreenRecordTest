@@ -13,53 +13,57 @@ import CoreImage
 
 
 protocol GrabDelegate {
-    func screenGrabbed(ioSurface: IOSurfaceRef)
+    func screenGrabbed(cgImage: CGImage)
 }
 
 class Grab {
     var delegate:GrabDelegate?
-    var displayStream: CGDisplayStream?
-    let backgroundQueue = DispatchQueue(label: "de.tmp8", qos: .background, target: nil)
     let width: Int
     let height: Int
     let displayId: CGDirectDisplayID
+    let frame: CGRect
     
     init() {
-        displayId = CGMainDisplayID()
-
         //        let bounds = CGDisplayBounds(displayId)
         //        width = Int(bounds.width)
         //        height = Int(bounds.height)
-
         // determine the internal render resolution.
+
+        displayId = CGMainDisplayID()
         let shot = CGDisplayCreateImage(displayId)!
         width = shot.width
         height = shot.height
-        
-        print("\(width)x\(height)")
 
-        displayStream = CGDisplayStream(
-            dispatchQueueDisplay: displayId,
-            outputWidth: width,
-            outputHeight: height,
-            pixelFormat: Int32(k32BGRAPixelFormat),
-            properties: nil,
-            queue: backgroundQueue) { (status, displayTime, frameSurface, updateRef) in
-                guard let surface = frameSurface else { return }
-                self.delegate?.screenGrabbed(ioSurface: surface)
-        }
+        frame = NSScreen.main!.frame
+        print("\(width)x\(height)")
     }
 
+
+    var timer: Timer?
     var running = false
     func start() {
         guard !running else { return }
-        displayStream?.start()
+        timer = Timer.scheduledTimer(
+            timeInterval: 1,
+            target: self,
+            selector: #selector(self.takeShot),
+            userInfo: nil, repeats: true)
         running = true
+    }
+    
+    @objc
+    func takeShot() {
+//        let image = CGWindowListCreateImage(frame, .optionOnScreenBelowWindow, 7050, .nominalResolution)!
+        let image = CGWindowListCreateImage(frame, .optionAll, kCGNullWindowID, .nominalResolution)!
+
+        delegate?.screenGrabbed(cgImage: image)
     }
 
     func stop() {
         guard running else { return }
-        displayStream?.stop()
+
+        timer?.invalidate()
+        timer = nil
         running = false
     }
 }
