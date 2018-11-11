@@ -44,7 +44,7 @@ class Grab {
     func start() {
         guard !running else { return }
         timer = Timer.scheduledTimer(
-            timeInterval: 1,
+            timeInterval: 0.1,
             target: self,
             selector: #selector(self.takeShot),
             userInfo: nil, repeats: true)
@@ -53,8 +53,8 @@ class Grab {
     
     @objc
     func takeShot() {
-//        let image = CGWindowListCreateImage(frame, .optionOnScreenBelowWindow, 7050, .nominalResolution)!
-        let image = CGWindowListCreateImage(frame, .optionAll, kCGNullWindowID, .nominalResolution)!
+        let image = CGWindowListCreateImage(frame, .optionOnScreenBelowWindow, 7050, .nominalResolution)!
+//        let image = CGWindowListCreateImage(frame, .optionAll, kCGNullWindowID, .nominalResolution)!
 
         delegate?.screenGrabbed(cgImage: image)
     }

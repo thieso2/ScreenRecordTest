@@ -89,21 +89,12 @@ extension AppDelegate: CompressDelegate {
 }
 
 
-var retainedCGImages = [CGImage]()
-
 extension AppDelegate: GrabDelegate {
     func screenGrabbed(cgImage: CGImage) {
         framesGrabbed += 1
         
-        retainedCGImages.append(cgImage)
-
         if let pix = cgImage.pixelBuffer() {
             compress?.compressFrame(pixelBuffer: pix)
-        }
-        
-        // need to retain the cgimage thats still compressing. 
-        if retainedCGImages.count > 20 {
-            retainedCGImages.removeFirst()
         }
         
         guard grabbedWindow.isVisible else { return }
@@ -123,22 +114,26 @@ extension CGImage {
 
         var pxbuffer: CVPixelBuffer?
 
-        guard let dataProvider = dataProvider else {
-            return nil
-        }
         
-//        let dataFromImageDataProvider = CFDataCreateMutableCopy(kCFAllocatorDefault, 0, dataProvider.data)
-        
+        // https://github.com/twilio/video-quickstart-swift/blob/master/ScreenCapturerExample/ExampleScreenCapturer.swift
+
+        let data = dataProvider?.data
+        let baseAddress = CFDataGetBytePtr(data!)
+        let unmanagedData = Unmanaged<CFData>.passRetained(data!)
+
         CVPixelBufferCreateWithBytes(
             kCFAllocatorDefault,
             width,
             height,
             kCVPixelFormatType_32BGRA,
-//            CFDataGetMutableBytePtr(dataFromImageDataProvider),
-            CFDataGetMutableBytePtr(dataProvider.data as! CFMutableData),
+            UnsafeMutableRawPointer(mutating: baseAddress!),
             bytesPerRow,
-            nil,
-            nil,
+            {
+                (releaseContext, baseAddress) in
+                let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
+                contextData.release()
+            },
+            unmanagedData.toOpaque(),
             nil,
             &pxbuffer
         )
