@@ -68,8 +68,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
+//        grabbedWindow.sharingType = .none
+//        compressedWindow.sharingType = .none
         for w in Windows.all {
-            print(w.appName, w.name, w.number, w.pid, w.bounds)
+            print(w.layer, w.appName, w.name, w.number, w.pid, w.bounds)
         }
 
         setup()
@@ -88,51 +90,26 @@ extension AppDelegate: CompressDelegate {
     }
 }
 
-
 extension AppDelegate: GrabDelegate {
-    func screenGrabbed(cgImage: CGImage) {
-        framesGrabbed += 1
-        
-        if let pix = cgImage.pixelBuffer() {
-            compress?.compressFrame(pixelBuffer: pix)
-        }
-        
-        guard grabbedWindow.isVisible else { return }
-
-        let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
-
-        DispatchQueue.main.async {
-            self.liveImage.image = nsImage
-            self.liveImage.needsDisplay = true
-        }
-    }
-}
-
-extension CGImage {
-    
-    func pixelBuffer() -> CVPixelBuffer? {
-
-        var pxbuffer: CVPixelBuffer?
-
-        
+    func pixelBuffer(for cgImage: CGImage) -> CVPixelBuffer? {
         // https://github.com/twilio/video-quickstart-swift/blob/master/ScreenCapturerExample/ExampleScreenCapturer.swift
-
-        let data = dataProvider?.data
+        
+        let data = cgImage.dataProvider?.data
         let baseAddress = CFDataGetBytePtr(data!)
         let unmanagedData = Unmanaged<CFData>.passRetained(data!)
-
+        var pxbuffer: CVPixelBuffer?
+        
         CVPixelBufferCreateWithBytes(
             kCFAllocatorDefault,
-            width,
-            height,
+            cgImage.width,
+            cgImage.height,
             kCVPixelFormatType_32BGRA,
             UnsafeMutableRawPointer(mutating: baseAddress!),
-            bytesPerRow,
+            cgImage.bytesPerRow,
             {
                 (releaseContext, baseAddress) in
-                let contextData = Unmanaged<CFData>.fromOpaque(releaseContext!)
-                contextData.release()
-            },
+                Unmanaged<CFData>.fromOpaque(releaseContext!).release()
+        },
             unmanagedData.toOpaque(),
             nil,
             &pxbuffer
@@ -141,5 +118,22 @@ extension CGImage {
         assert(pxbuffer != nil)
         
         return pxbuffer
+    }
+
+    func screenGrabbed(cgImage: CGImage) {
+        framesGrabbed += 1
+        
+        if let pix = pixelBuffer(for: cgImage) {
+            compress?.compressFrame(pixelBuffer: pix)
+        }
+
+        guard grabbedWindow.isVisible else { return }
+
+        let nsImage = NSImage(cgImage: cgImage, size: NSSize(width: cgImage.width, height: cgImage.height))
+
+        DispatchQueue.main.async {
+            self.liveImage.image = nsImage
+            self.liveImage.needsDisplay = true
+        }
     }
 }

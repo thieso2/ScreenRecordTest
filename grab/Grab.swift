@@ -20,25 +20,21 @@ class Grab {
     var delegate:GrabDelegate?
     let width: Int
     let height: Int
-    let displayId: CGDirectDisplayID
     let frame: CGRect
     
     init() {
-        //        let bounds = CGDisplayBounds(displayId)
-        //        width = Int(bounds.width)
-        //        height = Int(bounds.height)
-        // determine the internal render resolution.
-
-        displayId = CGMainDisplayID()
-        let shot = CGDisplayCreateImage(displayId)!
-        width = shot.width
-        height = shot.height
-
         frame = NSScreen.main!.frame
-        print("\(width)x\(height)")
+        width = Int(frame.width)
+        height = Int(frame.height)
+        print("Grab.init \(frame)")
     }
-
-
+    
+    func screenshot() -> CGImage? {
+        //        let image = CGWindowListCreateImage(frame, .optionOnScreenBelowWindow, 7050, .bestResolution)!
+        // use .nominalResolution for non-retina
+        return CGWindowListCreateImage(frame, .optionOnScreenOnly, kCGNullWindowID, .nominalResolution)
+    }
+    
     var timer: Timer?
     var running = false
     func start() {
@@ -53,15 +49,16 @@ class Grab {
     
     @objc
     func takeShot() {
-        let image = CGWindowListCreateImage(frame, .optionOnScreenBelowWindow, 7050, .nominalResolution)!
-//        let image = CGWindowListCreateImage(frame, .optionAll, kCGNullWindowID, .nominalResolution)!
-
-        delegate?.screenGrabbed(cgImage: image)
+        if let image = screenshot() {
+            delegate?.screenGrabbed(cgImage: image)
+        } else {
+            assert(false)
+        }
     }
-
+    
     func stop() {
         guard running else { return }
-
+        
         timer?.invalidate()
         timer = nil
         running = false
