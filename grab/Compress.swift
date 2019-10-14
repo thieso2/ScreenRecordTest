@@ -61,17 +61,17 @@ class Compress {
         
         vtCompressionSession = compressionSesionOut.pointee.unsafelyUnwrapped
         
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_ColorPrimaries,
-                             value: kCVImageBufferColorPrimaries_ITU_R_709_2))
-
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_TransferFunction,
-                             value: kCVImageBufferTransferFunction_ITU_R_709_2))
-
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_YCbCrMatrix,
-                             value: kCVImageBufferYCbCrMatrix_ITU_R_709_2))
+//        print(VTSessionSetProperty(vtCompressionSession,
+//                             key: kVTCompressionPropertyKey_ColorPrimaries,
+//                             value: kCVImageBufferColorPrimaries_ITU_R_709_2))
+//
+//        print(VTSessionSetProperty(vtCompressionSession,
+//                             key: kVTCompressionPropertyKey_TransferFunction,
+//                             value: kCVImageBufferTransferFunction_ITU_R_709_2))
+//
+//        print(VTSessionSetProperty(vtCompressionSession,
+//                             key: kVTCompressionPropertyKey_YCbCrMatrix,
+//                             value: kCVImageBufferYCbCrMatrix_ITU_R_709_2))
     }
     
     var frameNumber = 0
@@ -90,7 +90,9 @@ class Compress {
             frameProperties: nil,
             infoFlagsOut: nil) { (status, infoFlags, cmSampleBuffer) in
                 guard let sampleBuffer = cmSampleBuffer else { return }
-                self.delegate?.frameCompressed(cmSampleBuffer: sampleBuffer)
+                DispatchQueue.main.async {
+                    self.delegate?.frameCompressed(cmSampleBuffer: sampleBuffer)
+                }
         }
         
         assert(status == noErr)

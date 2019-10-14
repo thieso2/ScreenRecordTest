@@ -8,7 +8,8 @@
 
 import Foundation
 import CoreMediaIO
-import  AVKit
+import AVKit
+import SwiftFFmpeg
 
 class Writer {
     let avAssetWriterInput: AVAssetWriterInput

@@ -19,10 +19,12 @@ protocol GrabDelegate {
 class Grab {
     var delegate:GrabDelegate?
     var displayStream: CGDisplayStream?
-    let backgroundQueue = DispatchQueue(label: "de.tmp8", qos: .background, target: nil)
+//    let backgroundQueue = DispatchQueue(label: "de.tmp8", qos: .background, target: nil)
     let width: Int
     let height: Int
     let displayId: CGDirectDisplayID
+    
+    var framesGrabbed = 0
     
     init() {
         displayId = CGMainDisplayID()
@@ -44,9 +46,14 @@ class Grab {
             outputHeight: height,
             pixelFormat: Int32(k32BGRAPixelFormat),
             properties: nil,
-            queue: backgroundQueue) { (status, displayTime, frameSurface, updateRef) in
+            queue: .main) { (status, displayTime, frameSurface, updateRef) in
                 guard let surface = frameSurface else { return }
-                self.delegate?.screenGrabbed(ioSurface: surface)
+                self.framesGrabbed += 1
+                
+                if self.framesGrabbed % 10 == 0 {
+                    // take every 10th frame
+                    self.delegate?.screenGrabbed(ioSurface: surface)
+                }
         }
     }
 
