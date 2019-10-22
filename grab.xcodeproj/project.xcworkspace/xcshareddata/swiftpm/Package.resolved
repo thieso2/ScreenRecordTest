@@ -3,10 +3,10 @@
     "pins": [
       {
         "package": "SwiftFFmpeg",
-        "repositoryURL": "git@github.com:move37-com/SwiftFFmpeg.git",
+        "repositoryURL": "https://github.com/sunlubo/SwiftFFmpeg",
         "state": {
           "branch": "master",
-          "revision": "d20af574b48dfdb66a8bb49861f263d235d60fcf",
+          "revision": "81e3a6ebc93db473e2decb8fe7fc62d6dc8bf1b0",
           "version": null
         }
       }

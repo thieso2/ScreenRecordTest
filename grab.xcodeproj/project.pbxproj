@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		F06F060C23545B6B0061A84E /* SwiftFFmpeg in Frameworks */ = {isa = PBXBuildFile; productRef = F06F060B23545B6B0061A84E /* SwiftFFmpeg */; };
+		010666C1235F9412009ACED6 /* SwiftFFmpeg in Frameworks */ = {isa = PBXBuildFile; productRef = 010666C0235F9412009ACED6 /* SwiftFFmpeg */; };
 		F06F060E23545D230061A84E /* TODO.rtf in Resources */ = {isa = PBXBuildFile; fileRef = F06F060D23545D230061A84E /* TODO.rtf */; };
 		F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F088134B217DE4EF003929A6 /* AppDelegate.swift */; };
 		F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F088134D217DE4F0003929A6 /* Assets.xcassets */; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				F06F060C23545B6B0061A84E /* SwiftFFmpeg in Frameworks */,
+				010666C1235F9412009ACED6 /* SwiftFFmpeg in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,7 +94,7 @@
 			);
 			name = grab;
 			packageProductDependencies = (
-				F06F060B23545B6B0061A84E /* SwiftFFmpeg */,
+				010666C0235F9412009ACED6 /* SwiftFFmpeg */,
 			);
 			productName = grab;
 			productReference = F0881348217DE4EF003929A6 /* grab.app */;
@@ -112,6 +112,7 @@
 				TargetAttributes = {
 					F0881347217DE4EF003929A6 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1110;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 0;
@@ -130,7 +131,7 @@
 			);
 			mainGroup = F088133F217DE4EF003929A6;
 			packageReferences = (
-				F06F060A23545B6B0061A84E /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */,
+				010666BF235F9412009ACED6 /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */,
 			);
 			productRefGroup = F0881349217DE4EF003929A6 /* Products */;
 			projectDirPath = "";
@@ -313,7 +314,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.tmp8.grab;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -334,7 +335,7 @@
 				PRODUCT_BUNDLE_IDENTIFIER = de.tmp8.grab;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -362,9 +363,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		F06F060A23545B6B0061A84E /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */ = {
+		010666BF235F9412009ACED6 /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "git@github.com:move37-com/SwiftFFmpeg.git";
+			repositoryURL = "https://github.com/sunlubo/SwiftFFmpeg";
 			requirement = {
 				branch = master;
 				kind = branch;
@@ -373,9 +374,9 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		F06F060B23545B6B0061A84E /* SwiftFFmpeg */ = {
+		010666C0235F9412009ACED6 /* SwiftFFmpeg */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = F06F060A23545B6B0061A84E /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */;
+			package = 010666BF235F9412009ACED6 /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */;
 			productName = SwiftFFmpeg;
 		};
 /* End XCSwiftPackageProductDependency section */
