@@ -19,7 +19,6 @@ protocol GrabDelegate {
 class Grab {
     var delegate:GrabDelegate?
     var displayStream: CGDisplayStream?
-//    let backgroundQueue = DispatchQueue(label: "de.tmp8", qos: .background, target: nil)
     let width: Int
     let height: Int
     let displayId: CGDirectDisplayID
@@ -28,10 +27,6 @@ class Grab {
     
     init() {
         displayId = CGMainDisplayID()
-
-        //        let bounds = CGDisplayBounds(displayId)
-        //        width = Int(bounds.width)
-        //        height = Int(bounds.height)
 
         // determine the internal render resolution.
         let shot = CGDisplayCreateImage(displayId)!
