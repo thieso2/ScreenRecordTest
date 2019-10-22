@@ -88,7 +88,7 @@ extension AppDelegate: GrabDelegate {
 
         // comment out the next line to see the image "as is" without
         // the screen color profile applied
-//        cgImage = cgImage.copy(colorSpace: screenColorSpace)!
+        cgImage = cgImage.copy(colorSpace: screenColorSpace)!
 
         let nsImage = NSImage(cgImage: cgImage, size: ciImage.extent.size)
         
