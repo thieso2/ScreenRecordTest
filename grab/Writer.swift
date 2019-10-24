@@ -24,6 +24,8 @@ class Writer {
         guard ofmtCtx.addStream() != nil else {
             fatalError("Failed allocating output stream.")
         }
+
+        // add colorspace options
         // (*video_out_stream)->time_base = (AVRational){video_in_stream->time_base.num, video_in_stream->time_base.den};
         // ostream.codecParameters.copy(from: istream.codecParameters)
 
@@ -31,32 +33,30 @@ class Writer {
 
         try! ofmtCtx.openOutput(url: ouputPath, flags: .write)
 
-        // TODO: add colorspace options
         try! ofmtCtx.writeHeader()
     }
     
     func writeSampleBuffer(sampleBuffer: CMSampleBuffer) {
 
+        let pkt = AVPacket()
+
         var length: size_t = 0
         var bufferDataPointer: UnsafeMutablePointer<Int8>? = nil
 
-        CMBlockBufferGetDataPointer(CMSampleBufferGetDataBuffer(sampleBuffer)!, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length, dataPointerOut: &bufferDataPointer)
+        CMBlockBufferGetDataPointer(CMSampleBufferGetDataBuffer(sampleBuffer)!, atOffset: 0, lengthAtOffsetOut: nil,
+                                    totalLengthOut: &length, dataPointerOut: &bufferDataPointer)
         
-        let data = UnsafeMutableRawPointer(bufferDataPointer)?.load(as: UnsafeMutablePointer<UInt8>.self)
-        
-        let pkt = AVPacket()
-        
-        pkt.data = data
+        pkt.data = UnsafeMutableRawPointer(bufferDataPointer)?.load(as: UnsafeMutablePointer<UInt8>.self)
         pkt.size = length
-
         pkt.pts = self.framesWritten
         pkt.dts = pkt.pts
         pkt.position = -1
         pkt.duration = 1
         pkt.streamIndex = 0
 
-//        av_packet_rescale_ts(pkt, *time_base, st->time_base);
-//        av_packet_rescale_ts(pkt, video_enc_ctx->time_base, out_stream->time_base);
+        // av_packet_rescale_ts(pkt, *time_base, st->time_base);
+        // av_packet_rescale_ts(pkt, video_enc_ctx->time_base, out_stream->time_base);
+
         try! ofmtCtx.writeFrame(pkt)
 
         self.framesWritten += 1
