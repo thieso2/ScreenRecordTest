@@ -12,58 +12,96 @@ import SwiftFFmpeg
 
 class Writer {
 
-    let ofmtCtx: AVFormatContext
+    let formatContext: AVFormatContext
     var framesWritten: Int64 = 0
+    var open = false
 
     init(outputURL: URL, formatHint: CMFormatDescription) {
         
-        let ouputPath = outputURL.absoluteString
+        print("Writer.init()")
 
-        ofmtCtx = try! AVFormatContext(format: nil, filename: ouputPath)
+        let outputPath = outputURL.absoluteString
 
-        guard ofmtCtx.addStream() != nil else {
-            fatalError("Failed allocating output stream.")
-        }
+        formatContext = try! AVFormatContext(format: nil, formatName: nil, filename: outputPath)
 
-        // add colorspace options
-        // (*video_out_stream)->time_base = (AVRational){video_in_stream->time_base.num, video_in_stream->time_base.den};
-        // ostream.codecParameters.copy(from: istream.codecParameters)
+        let dimensions = CMVideoFormatDescriptionGetDimensions(formatHint)
+        print("\(dimensions.width)x\(dimensions.height)")
 
-        ofmtCtx.dumpFormat()
+        // initialize stream codec params from the codec context
+        let codec = AVCodec.findEncoderById(AVCodecID.H264)
+        let codecContext = AVCodecContext(codec: codec)
+        codecContext.width = Int(dimensions.width)
+        codecContext.height = Int(dimensions.height)
+        codecContext.framerate = AVRational(num: 1, den: 600)
+        codecContext.timebase = AVRational(num: codecContext.framerate.den, den: codecContext.framerate.num)
+        
+        let stream = formatContext.addStream()!
+        stream.codecParameters.copy(from: codecContext)
 
-        try! ofmtCtx.openOutput(url: ouputPath, flags: .write)
+        stream.timebase = AVRational(num: 1, den: 600)
 
-        try! ofmtCtx.writeHeader()
+        formatContext.dumpFormat(url: nil, isOutput: true)
+
+        try! formatContext.openOutput(url: outputPath, flags: .write)
+
+        try! formatContext.writeHeader()
+
+        open = true
     }
     
+    private func logPacket(_ pkt: AVPacket, _ formatContext: AVFormatContext) {
+
+        print("pts:\(pkt.pts) dts:\(pkt.dts) data length:\(pkt.size)")
+        
+        var b1 = UnsafeMutableRawPointer(pkt.data)!
+        for _ in 1...30 {
+            print(String(format:"%02X", b1.load(as: UInt8.self)), separator: "", terminator: " ")
+            b1 += 1
+        }
+        print("")
+    }
+
     func writeSampleBuffer(sampleBuffer: CMSampleBuffer) {
 
-        let pkt = AVPacket()
+        print("Writer.writeSampleBuffer(), framesWritten: \(framesWritten)")
+
+        guard open else { return }
 
         var length: size_t = 0
         var bufferDataPointer: UnsafeMutablePointer<Int8>? = nil
 
-        CMBlockBufferGetDataPointer(CMSampleBufferGetDataBuffer(sampleBuffer)!, atOffset: 0, lengthAtOffsetOut: nil,
-                                    totalLengthOut: &length, dataPointerOut: &bufferDataPointer)
+        CMBlockBufferGetDataPointer(CMSampleBufferGetDataBuffer(sampleBuffer)!, atOffset: 0, lengthAtOffsetOut: nil, totalLengthOut: &length, dataPointerOut: &bufferDataPointer)
         
-        pkt.data = UnsafeMutableRawPointer(bufferDataPointer)?.load(as: UnsafeMutablePointer<UInt8>.self)
-        pkt.size = length
-        pkt.pts = self.framesWritten
-        pkt.dts = pkt.pts
-        pkt.position = -1
-        pkt.duration = 1
-        pkt.streamIndex = 0
+        let description = CMSampleBufferGetFormatDescription(sampleBuffer)!
+        
+        var lengthCodeSize: Int32 = 0
+        CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description, parameterSetIndex: 0, parameterSetPointerOut: nil, parameterSetSizeOut: nil, parameterSetCountOut: nil, nalUnitHeaderLengthOut: &lengthCodeSize)
 
-        // av_packet_rescale_ts(pkt, *time_base, st->time_base);
-        // av_packet_rescale_ts(pkt, video_enc_ctx->time_base, out_stream->time_base);
+        bufferDataPointer?.withMemoryRebound(to: UInt8.self, capacity: length) { to in
+            let pkt = AVPacket()
+            pkt.data = to
+            pkt.size = length
+            pkt.pts = framesWritten
+            pkt.dts = pkt.pts
+            pkt.position = -1
+            pkt.duration = 1
+            pkt.streamIndex = 0
 
-        try! ofmtCtx.writeFrame(pkt)
+            logPacket(pkt, formatContext)
+            
+            try! formatContext.writeFrame(pkt)
+        }
 
         self.framesWritten += 1
     }
     
     func close() {
-        try! ofmtCtx.writeTrailer()
-        ofmtCtx.flush()
+        print("Writer.close()")
+
+        guard open else { return }
+        open = false
+        
+        try! formatContext.writeTrailer()
+        formatContext.flush()
     }
 }
