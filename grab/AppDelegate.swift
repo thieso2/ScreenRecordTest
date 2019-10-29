@@ -56,6 +56,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setup()
+        self.startstop("")
     }
 }
 
