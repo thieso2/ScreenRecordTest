@@ -18,15 +18,15 @@ class Writer {
 
     let formatContext: AVFormatContext
     let stream: AVStream
+    let codecContext: AVCodecContext
+    var framesReceived: Int64 = 0
     var framesWritten: Int64 = 0
     var open = false
     let filterContext: AVBitStreamFilterContext
     var startCode: [UInt8] = [0, 0, 0, 1]
-    let startCodeSize = 4
+    let startCodeSize: UInt32 = 4
 
     init(outputURL: URL, formatHint: CMFormatDescription) {
-        
-        print("Writer.init()")
 
         AVLog.level = AVLog.Level.trace
 
@@ -39,16 +39,18 @@ class Writer {
 
         // initialize stream codec params from the codec context
         let codec = AVCodec.findEncoderById(AVCodecID.H264)
-        let codecContext = AVCodecContext(codec: codec)
+        codecContext = AVCodecContext(codec: codec)
         codecContext.width = Int(dimensions.width)
         codecContext.height = Int(dimensions.height)
-        codecContext.framerate = AVRational(num: 1, den: 600)
+        codecContext.framerate = AVRational(num: 60, den: 1)
         codecContext.timebase = AVRational(num: codecContext.framerate.den, den: codecContext.framerate.num)
         
+        codecContext.flags = AVCodecContext.Flag.globalHeader
+
         stream = formatContext.addStream()!
         stream.codecParameters.copy(from: codecContext)
 
-        stream.timebase = AVRational(num: 1, den: 600)
+        stream.timebase = AVRational(num: 1, den: 60)
 
         formatContext.dumpFormat(url: nil, isOutput: true)
 
@@ -71,18 +73,11 @@ class Writer {
     private func logPacket(_ pkt: AVPacket, _ formatContext: AVFormatContext) {
 
         print("pts:\(pkt.pts), dts:\(pkt.dts), keyframe: \(pkt.flags.rawValue & AVPacket.Flag.key.rawValue), length:\(pkt.size)")
-        
-        var b1 = UnsafeMutableRawPointer(pkt.data)!
-        for _ in 1...30 {
-            print(String(format:"%02X", b1.load(as: UInt8.self)), separator: "", terminator: " ")
-            b1 += 1
-        }
-        print("")
     }
 
-    private func getParamsSize(_ description:CMFormatDescription) -> Int {
+    private func getParamsSize(_ description:CMFormatDescription) -> UInt32 {
 
-        var totalSize = 0
+        var totalSize: UInt32 = 0
         var paramCount: Int = 0
 
         CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
@@ -100,30 +95,25 @@ class Writer {
                                                                parameterSetSizeOut: &paramsSize,
                                                                parameterSetCountOut: nil,
                                                                nalUnitHeaderLengthOut: nil)
-            totalSize += paramsSize + startCodeSize
+            totalSize += UInt32(paramsSize) + startCodeSize
         }
         return totalSize
     }
 
-    private func countNalus(_ sampleBuffer: CMSampleBuffer, lengthCodeSize: Int32) -> Int {
+    private func countNalus(_ sampleBuffer: CMSampleBuffer, lengthCodeSize: UInt32) throws -> Int {
         
-        var offset: Int32 = 0
+        var offset: UInt32 = 0
         var naluCount = 0
-        var sizeBuf = Array<UInt8>(repeating: 0, count: 4)
 
         let inBufSize = CMSampleBufferGetTotalSampleSize(sampleBuffer)
         let block = CMSampleBufferGetDataBuffer(sampleBuffer)!
 
         while (offset < inBufSize) {
-            var naluLen: Int32
-            var dataSize: Int32 = 0
+            var naluLen: UInt32
+            var dataSize: UInt32 = 0
 
-            CMBlockBufferCopyDataBytes(block, atOffset: Int(offset), dataLength: Int(lengthCodeSize), destination: &sizeBuf)
-
-            for i in 0..<lengthCodeSize {
-                dataSize <<= 8
-                dataSize |= Int32(sizeBuf[Int(i)])
-            }
+            CMBlockBufferCopyDataBytes(block, atOffset: Int(offset), dataLength: Int(lengthCodeSize), destination: &dataSize)
+            dataSize = CFSwapInt32(dataSize)
 
             naluLen = dataSize + lengthCodeSize
             offset += naluLen
@@ -132,11 +122,24 @@ class Writer {
         return naluCount
     }
 
-    private func copyParamSets(_ description:CMFormatDescription, outBuf: UnsafeMutablePointer<UInt8>, outBufSize: Int) throws {
+    private func dumpBuffer(buf: UnsafeMutablePointer<UInt8>, bufSize: Int = 0) {
+        var b = UnsafeMutableRawPointer(buf)!
+        for i in 0..<bufSize {
+            print(String(format:"%02X", b.load(as: UInt8.self)), separator: "", terminator: " ")
+            b += 1
+            if ((i + 1) % 16 == 0) {
+                print("")
+            }
+        }
+        print("")
+    }
+
+    private func copyParamSets(_ description:CMFormatDescription, outBuf: UnsafeMutablePointer<UInt8>, outBufSize: UInt32) throws {
         
-        print("Writer.copyParamSets()")
+        print("copyParamSets(size = \(outBufSize))")
 
         var paramCount: Int = 0
+        var nalType: UInt8 = 0
 
         CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
                                                         parameterSetIndex: 0,
@@ -144,9 +147,9 @@ class Writer {
                                                         parameterSetSizeOut: nil,
                                                         parameterSetCountOut: &paramCount,
                                                         nalUnitHeaderLengthOut: nil)
+        var offset: UInt32 = 0
         for i in 0..<paramCount {
-            var offset: Int = 0
-            var nextOffset: Int = 0
+            var nextOffset: UInt32 = 0
             var params: UnsafePointer<UInt8>?
             var paramsSize: Int = 0
             var currentDest: UnsafeMutablePointer<UInt8>?
@@ -157,53 +160,48 @@ class Writer {
                                                                parameterSetSizeOut: &paramsSize,
                                                                parameterSetCountOut: nil,
                                                                nalUnitHeaderLengthOut: nil)
-            nextOffset = offset + startCodeSize + paramsSize
+            nextOffset = offset + startCodeSize + UInt32(paramsSize)
             if (outBufSize < nextOffset) {
                 throw WriterError.invalidState("Output buffer too small for param sets!")
             }
             
-            currentDest = outBuf + offset
-            currentDest?.initialize(from: startCode, count: startCodeSize)
+            currentDest = outBuf + Int(offset)
+            currentDest!.initialize(from: startCode, count: Int(startCodeSize))
 
             offset += startCodeSize
-            currentDest = outBuf + offset
-            currentDest?.initialize(from: params!, count: paramsSize)
+            currentDest = outBuf + Int(offset)
+            currentDest!.initialize(from: params!, count: paramsSize)
+
+            let b = UnsafeMutableRawPointer(currentDest)!
+            nalType = b.load(as: UInt8.self)
+            nalType &= 0x1F
+
+            print("param set: \(i), data size: \(paramsSize), nalType: \(nalType)")
+
             offset = nextOffset
         }
     }
 
-    private func copyReplaceLengthCodes(_ sampleBuffer: CMSampleBuffer, lengthCodeSize: Int32, outBuf: UnsafeMutablePointer<UInt8>, outBufSize: Int) throws {
+    private func copyReplaceLengthCodes(_ sampleBuffer: CMSampleBuffer, lengthCodeSize: UInt32, outBuf: UnsafeMutablePointer<UInt8>, outBufSize: UInt32) throws {
 
-        print("Writer.copyReplaceLengthCodes()")
-
-        let srcSize = CMSampleBufferGetTotalSampleSize(sampleBuffer)
-        var remainingSrcSize = srcSize
-        var remainingDstSize = outBufSize
+        let srcSize: UInt32 = UInt32(CMSampleBufferGetTotalSampleSize(sampleBuffer))
+        var remainingSrcSize: UInt32 = srcSize
+        var remainingDstSize: UInt32 = outBufSize
         var srcOffset = 0
         var currentDest: UnsafeMutablePointer<UInt8>? = outBuf
 
-        let sizeBuf: [UInt8] = [0, 0, 0, 0]
-        var nalType: UInt8 = 0
         let block = CMSampleBufferGetDataBuffer(sampleBuffer)!
-
+        
         while (remainingSrcSize > 0) {
-            var currSrcLen: Int
-            var currDstLen: Int
-            var dataSize: Int32 = 0
+            var currSrcLen: UInt32
+            var currDstLen: UInt32
+            var dataSize: UInt32 = 0
 
-            CMBlockBufferCopyDataBytes(block, atOffset: srcOffset, dataLength: Int(lengthCodeSize), destination: UnsafeMutableRawPointer(mutating: sizeBuf))
-            CMBlockBufferCopyDataBytes(block, atOffset: srcOffset + Int(lengthCodeSize), dataLength: 1, destination: &nalType)
+            CMBlockBufferCopyDataBytes(block, atOffset: srcOffset, dataLength: Int(lengthCodeSize), destination: &dataSize)
+            dataSize = CFSwapInt32(dataSize)
 
-            nalType &= 0x1F
-            print("nalType: \(nalType)")
-            
-            for i in 0..<lengthCodeSize {
-                dataSize <<= 8
-                dataSize |= Int32(sizeBuf[Int(i)])
-            }
-
-            currSrcLen = Int(dataSize) + Int(lengthCodeSize)
-            currDstLen = Int(dataSize) + startCodeSize
+            currSrcLen = dataSize + lengthCodeSize
+            currDstLen = dataSize + startCodeSize
             if (remainingSrcSize < currSrcLen) {
                 throw WriterError.invalidState("Source buffer too small to read from!")
             }
@@ -211,34 +209,30 @@ class Writer {
                 throw WriterError.invalidState("Dest buffer too small to write to!")
             }
 
-            currentDest?.initialize(from: startCode, count: startCodeSize)
-            CMBlockBufferCopyDataBytes(block, atOffset: srcOffset + Int(lengthCodeSize), dataLength: Int(dataSize), destination: currentDest! + startCodeSize)
+            currentDest?.initialize(from: startCode, count: Int(startCodeSize))
+            CMBlockBufferCopyDataBytes(block, atOffset: srcOffset + Int(lengthCodeSize), dataLength: Int(dataSize), destination: currentDest! + Int(startCodeSize))
 
-            srcOffset += currSrcLen
-            currentDest = currentDest! + currDstLen
+            srcOffset += Int(currSrcLen)
+            currentDest = currentDest! + Int(currDstLen)
             remainingSrcSize -= currSrcLen
             remainingDstSize -= currDstLen
         }
     }
 
-    func writeSampleBuffer(sampleBuffer: CMSampleBuffer) {
-
-        print("Writer.writeSampleBuffer(), framesWritten: \(framesWritten)")
+    func writeSampleBuffer(_ sampleBuffer: CMSampleBuffer) throws {
 
         guard open else { return }
 
         let description:CMFormatDescription = CMSampleBufferGetFormatDescription(sampleBuffer)!
 
         let paramsSize = getParamsSize(description)
-        print("paramsSize: \(paramsSize)")
 
-        if (self.framesWritten == 0) {
-            stream.codecParameters.extradata = UnsafeMutablePointer.allocate(capacity: paramsSize)
-            stream.codecParameters.extradataSize = paramsSize
-
+        if (stream.codecParameters.extradataSize == 0) {
+            stream.codecParameters.extradata = UnsafeMutablePointer.allocate(capacity: Int(paramsSize))
+            stream.codecParameters.extradataSize = Int(paramsSize)
             try! copyParamSets(description, outBuf: stream.codecParameters.extradata!, outBufSize: paramsSize)
         }
-            
+
         var isKeyframe:Bool = false
 
         let attachmentsArray:CFArray = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false)!
@@ -255,7 +249,7 @@ class Writer {
             }
         }
         
-        let inBufSize = CMSampleBufferGetTotalSampleSize(sampleBuffer)
+        let inBufSize: UInt32 = UInt32(CMSampleBufferGetTotalSampleSize(sampleBuffer))
 
         var lengthCodeSize: Int32 = 0
         CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
@@ -265,39 +259,32 @@ class Writer {
                                                            parameterSetCountOut: nil,
                                                            nalUnitHeaderLengthOut: &lengthCodeSize)
 
-        let naluCount = countNalus(sampleBuffer, lengthCodeSize: lengthCodeSize)
-        print("naluCount: \(naluCount)")
+        let naluCount = try! countNalus(sampleBuffer, lengthCodeSize: UInt32(lengthCodeSize))
+        let outBufSize = inBufSize + UInt32((naluCount * Int((startCodeSize - UInt32(lengthCodeSize)))))
 
-        var headerSize = 0
-        if (isKeyframe) {
-            headerSize = paramsSize
-        }
-        let outBufSize = headerSize + inBufSize + (naluCount * (startCodeSize - Int(lengthCodeSize)))
-
-        let outBuf: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer.allocate(capacity: outBufSize)
+        let outBuf: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer.allocate(capacity: Int(outBufSize))
 
         let pkt = AVPacket()
         pkt.data = outBuf
-        pkt.size = outBufSize
-        pkt.pts = framesWritten
-        pkt.dts = pkt.pts
+        pkt.size = Int(outBufSize)
         pkt.position = -1
         pkt.duration = 1
-        pkt.streamIndex = 0
+        pkt.pts = framesWritten
+        pkt.dts = pkt.pts
+        pkt.rescaleTimestamp(from: codecContext.timebase, to: stream.timebase)
 
         if (isKeyframe) {
-            try! copyParamSets(description, outBuf: outBuf, outBufSize: outBufSize)
             pkt.flags = AVPacket.Flag(rawValue: (pkt.flags.rawValue | AVPacket.Flag.key.rawValue))
         }
 
-        try! copyReplaceLengthCodes(sampleBuffer, lengthCodeSize: lengthCodeSize, outBuf: outBuf, outBufSize: pkt.size - headerSize)
+        try! copyReplaceLengthCodes(sampleBuffer, lengthCodeSize: UInt32(lengthCodeSize), outBuf: outBuf, outBufSize: UInt32(pkt.size))
 
-        logPacket(pkt, formatContext)
-            
-        try! self.filterContext.sendPacket(pkt)
+        try! filterContext.sendPacket(pkt)
+        framesReceived += 1
+
         while (true) {
             do {
-                try self.filterContext.receivePacket(pkt)
+                try filterContext.receivePacket(pkt)
             } catch let err as AVError where err == .eof {
                 break
             } catch let err as AVError where err == .tryAgain {
@@ -305,20 +292,23 @@ class Writer {
             } catch {
                 print("Unexpected error from receivePacket()")
             }
-            
-            try! formatContext.writeFrame(pkt)
-        }
 
-        self.framesWritten += 1
+            logPacket(pkt, formatContext)
+
+            try! formatContext.interleavedWriteFrame(pkt)
+            framesWritten += 1
+            print("framesReceived: \(framesReceived), framesWritten: \(framesWritten)")
+        }
     }
     
     func close() {
-        print("Writer.close()")
 
         guard open else { return }
         open = false
         
         try! formatContext.writeTrailer()
         formatContext.flush()
+
+        print("writer closed")
     }
 }

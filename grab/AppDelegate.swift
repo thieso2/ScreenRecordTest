@@ -19,66 +19,51 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBOutlet weak var sampleBufferDisplay: DisplayLayer!
     
     var grab: Grab!
-    var compress: Compress?
-    var writer: Writer?
 
     var framesGrabbed = 0
     var framesCompressed = 0
-    
+
     @IBAction func showGrab(_ sender: Any) {
         grabbedWindow.makeKeyAndOrderFront(self)
     }
     
     @IBAction func showCompress(_ sender: Any) {
         compressedWindow.makeKeyAndOrderFront(self)
-
     }
     
     @IBAction func startstop(_ sender: Any) {
         if grab.running {
-            writer?.close()
             grab.stop()
         } else {
             grab.start()
-            writer = Writer(
-                outputURL: URL(fileURLWithPath: "/tmp/grab-\(Date()).mov"),
-                formatHint: compress!.formatHint!)
         }
     }
     
     func setup() {
-        grab = Grab()
-        grab.delegate = self
-        
-        compress = Compress(width: grab.width, height: grab.height)
-        compress?.delegate = self
+        grab = Grab(displayDelegate: self, basePath: "/Users/nick/Temp")
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setup()
-        self.startstop("")
+        grab.start()
     }
-}
-
-extension AppDelegate: CompressDelegate {
-    func frameCompressed(cmSampleBuffer: CMSampleBuffer) {
-        framesCompressed += 1
-        writer?.writeSampleBuffer(sampleBuffer: cmSampleBuffer)
-
-        guard compressedWindow.isVisible else { return }
-
-        sampleBufferDisplay.enqueue(cMSamplebuffer: cmSampleBuffer)
-    }
+    
+    func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
+        if grab.running {
+            grab.stop(sender)
+            return NSApplication.TerminateReply.terminateLater
+        }
+        return NSApplication.TerminateReply.terminateNow
+   }
 }
 
 let screenColorSpace = CGDisplayCopyColorSpace(CGMainDisplayID())
 
-extension AppDelegate: GrabDelegate {
+extension AppDelegate: DisplayDelegate {
     
-    func screenGrabbed(ioSurface: IOSurfaceRef) {
+    func screenGrabbed(_ ioSurface: IOSurfaceRef) {
         framesGrabbed += 1
-        compress?.compressFrame(surface: ioSurface)
-        
+
         guard grabbedWindow.isVisible else { return }
         
         // display frame
@@ -87,8 +72,7 @@ extension AppDelegate: GrabDelegate {
         let context = CIContext(options: nil)
         var cgImage = context.createCGImage(ciImage, from: ciImage.extent)!
 
-        // comment out the next line to see the image "as is" without
-        // the screen color profile applied
+        // comment out the next line to see the image "as is" without the screen color profile applied
         cgImage = cgImage.copy(colorSpace: screenColorSpace)!
 
         let nsImage = NSImage(cgImage: cgImage, size: ciImage.extent.size)
@@ -98,5 +82,12 @@ extension AppDelegate: GrabDelegate {
             self.liveImage.needsDisplay = true
         }
     }
-}
+    
+    func frameCompressed(_ cmSampleBuffer: CMSampleBuffer) {
+        framesCompressed += 1
 
+        guard compressedWindow.isVisible else { return }
+
+        sampleBufferDisplay.enqueue(cMSamplebuffer: cmSampleBuffer)
+    }
+}
