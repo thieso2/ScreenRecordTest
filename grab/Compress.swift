@@ -60,18 +60,12 @@ class Compress {
         assert(status == noErr)
         
         vtCompressionSession = compressionSesionOut.pointee.unsafelyUnwrapped
-        
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_ColorPrimaries,
-                             value: kCVImageBufferColorPrimaries_ITU_R_709_2))
 
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_TransferFunction,
-                             value: kCVImageBufferTransferFunction_ITU_R_709_2))
-
-        print(VTSessionSetProperty(vtCompressionSession,
-                             key: kVTCompressionPropertyKey_YCbCrMatrix,
-                             value: kCVImageBufferYCbCrMatrix_ITU_R_709_2))
+        if let iccData = NSScreen.main?.colorSpace?.cgColorSpace?.copyICCData() {
+            print(VTSessionSetProperties(vtCompressionSession, propertyDictionary: [
+                kVTCompressionPropertyKey_ICCProfile: iccData as CFTypeRef
+                ] as CFDictionary))
+        }
     }
     
     var frameNumber = 0
