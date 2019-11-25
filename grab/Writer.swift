@@ -19,38 +19,59 @@ class Writer {
     let formatContext: AVFormatContext
     let stream: AVStream
     let codecContext: AVCodecContext
-    var framesReceived: Int64 = 0
     var framesWritten: Int64 = 0
     var open = false
     let filterContext: AVBitStreamFilterContext
     var startCode: [UInt8] = [0, 0, 0, 1]
     let startCodeSize: UInt32 = 4
+    
+    private func logPacket(_ pkt: AVPacket, _ formatContext: AVFormatContext) {
 
-    init(outputURL: URL, formatHint: CMFormatDescription) {
+        print("pts:\(pkt.pts), dts:\(pkt.dts), keyframe: \(pkt.flags.rawValue & AVPacket.Flag.key.rawValue), length:\(pkt.size)")
+    }
+    
+    private func dumpBuffer(buf: UnsafeMutablePointer<UInt8>, bufSize: Int = 0) {
+        var b = UnsafeMutableRawPointer(buf)!
+        for i in 0..<bufSize {
+            print(String(format:"%02X", b.load(as: UInt8.self)), separator: "", terminator: " ")
+            b += 1
+            if ((i + 1) % 16 == 0) {
+                print("")
+            }
+        }
+        print("")
+    }
 
-        AVLog.level = AVLog.Level.trace
+    init(outputURL: URL, formatDescription: CMFormatDescription) {
+
+        AVLog.level = AVLog.Level.info
 
         let outputPath = outputURL.absoluteString
 
         formatContext = try! AVFormatContext(format: nil, formatName: nil, filename: outputPath)
 
-        let dimensions = CMVideoFormatDescriptionGetDimensions(formatHint)
-        print("\(dimensions.width)x\(dimensions.height)")
+        let dimensions = CMVideoFormatDescriptionGetDimensions(formatDescription)
 
         // initialize stream codec params from the codec context
-        let codec = AVCodec.findEncoderById(AVCodecID.H264)
+        let codec = AVCodec.findDecoderById(AVCodecID.H264)
         codecContext = AVCodecContext(codec: codec)
         codecContext.width = Int(dimensions.width)
         codecContext.height = Int(dimensions.height)
         codecContext.framerate = AVRational(num: 60, den: 1)
         codecContext.timebase = AVRational(num: codecContext.framerate.den, den: codecContext.framerate.num)
-        
         codecContext.flags = AVCodecContext.Flag.globalHeader
 
         stream = formatContext.addStream()!
         stream.codecParameters.copy(from: codecContext)
 
-        stream.timebase = AVRational(num: 1, den: 60)
+        stream.timebase = AVRational(num: 1, den: 600)
+
+        if let property = CMFormatDescriptionGetExtension(formatDescription, extensionKey: kCMFormatDescriptionExtension_ICCProfile) {
+            let iccData = property as! CFData
+            let size = CFDataGetLength(iccData)
+            let data: UnsafeMutablePointer<UInt8> = UnsafeMutablePointer.allocate(capacity: Int(size))
+            try! stream.addSideData(type: AVPacketSideDataType.iccProfile, data: data, size: size)
+        }
 
         formatContext.dumpFormat(url: nil, isOutput: true)
 
@@ -65,14 +86,9 @@ class Writer {
 
         try! formatContext.openOutput(url: outputPath, flags: .write)
 
-        try! formatContext.writeHeader()
+        try! formatContext.writeHeader(options: ["movflags": "write_colr+prefer_icc+allow_small_timescale"])
 
         open = true
-    }
-    
-    private func logPacket(_ pkt: AVPacket, _ formatContext: AVFormatContext) {
-
-        print("pts:\(pkt.pts), dts:\(pkt.dts), keyframe: \(pkt.flags.rawValue & AVPacket.Flag.key.rawValue), length:\(pkt.size)")
     }
 
     private func getParamsSize(_ description:CMFormatDescription) -> UInt32 {
@@ -122,21 +138,7 @@ class Writer {
         return naluCount
     }
 
-    private func dumpBuffer(buf: UnsafeMutablePointer<UInt8>, bufSize: Int = 0) {
-        var b = UnsafeMutableRawPointer(buf)!
-        for i in 0..<bufSize {
-            print(String(format:"%02X", b.load(as: UInt8.self)), separator: "", terminator: " ")
-            b += 1
-            if ((i + 1) % 16 == 0) {
-                print("")
-            }
-        }
-        print("")
-    }
-
     private func copyParamSets(_ description:CMFormatDescription, outBuf: UnsafeMutablePointer<UInt8>, outBufSize: UInt32) throws {
-        
-        print("copyParamSets(size = \(outBufSize))")
 
         var paramCount: Int = 0
         var nalType: UInt8 = 0
@@ -175,8 +177,6 @@ class Writer {
             let b = UnsafeMutableRawPointer(currentDest)!
             nalType = b.load(as: UInt8.self)
             nalType &= 0x1F
-
-            print("param set: \(i), data size: \(paramsSize), nalType: \(nalType)")
 
             offset = nextOffset
         }
@@ -280,7 +280,6 @@ class Writer {
         try! copyReplaceLengthCodes(sampleBuffer, lengthCodeSize: UInt32(lengthCodeSize), outBuf: outBuf, outBufSize: UInt32(pkt.size))
 
         try! filterContext.sendPacket(pkt)
-        framesReceived += 1
 
         while (true) {
             do {
@@ -293,11 +292,10 @@ class Writer {
                 print("Unexpected error from receivePacket()")
             }
 
-            logPacket(pkt, formatContext)
+            // logPacket(pkt, formatContext)
 
             try! formatContext.interleavedWriteFrame(pkt)
             framesWritten += 1
-            print("framesReceived: \(framesReceived), framesWritten: \(framesWritten)")
         }
     }
     
@@ -308,7 +306,5 @@ class Writer {
         
         try! formatContext.writeTrailer()
         formatContext.flush()
-
-        print("writer closed")
     }
 }

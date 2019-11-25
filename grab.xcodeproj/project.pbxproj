@@ -7,7 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
-		01420E902370B14100D98D7A /* SwiftFFmpeg in Frameworks */ = {isa = PBXBuildFile; productRef = 01420E8F2370B14100D98D7A /* SwiftFFmpeg */; };
+		01623EA023830CB800ECD9EF /* SwiftFFmpeg in Frameworks */ = {isa = PBXBuildFile; productRef = 01623E9F23830CB800ECD9EF /* SwiftFFmpeg */; };
 		F06F060E23545D230061A84E /* TODO.rtf in Resources */ = {isa = PBXBuildFile; fileRef = F06F060D23545D230061A84E /* TODO.rtf */; };
 		F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F088134B217DE4EF003929A6 /* AppDelegate.swift */; };
 		F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F088134D217DE4F0003929A6 /* Assets.xcassets */; };
@@ -37,7 +37,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				01420E902370B14100D98D7A /* SwiftFFmpeg in Frameworks */,
+				01623EA023830CB800ECD9EF /* SwiftFFmpeg in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -94,7 +94,7 @@
 			);
 			name = grab;
 			packageProductDependencies = (
-				01420E8F2370B14100D98D7A /* SwiftFFmpeg */,
+				01623E9F23830CB800ECD9EF /* SwiftFFmpeg */,
 			);
 			productName = grab;
 			productReference = F0881348217DE4EF003929A6 /* grab.app */;
@@ -131,7 +131,7 @@
 			);
 			mainGroup = F088133F217DE4EF003929A6;
 			packageReferences = (
-				01420E8E2370B14100D98D7A /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */,
+				01623E9E23830CB800ECD9EF /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */,
 			);
 			productRefGroup = F0881349217DE4EF003929A6 /* Products */;
 			projectDirPath = "";
@@ -365,20 +365,20 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		01420E8E2370B14100D98D7A /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */ = {
+		01623E9E23830CB800ECD9EF /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */ = {
 			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/vectronic/SwiftFFmpeg.git";
+			repositoryURL = "https://github.com/vectronic/SwiftFFmpeg";
 			requirement = {
-				branch = master;
+				branch = sidedataicc;
 				kind = branch;
 			};
 		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		01420E8F2370B14100D98D7A /* SwiftFFmpeg */ = {
+		01623E9F23830CB800ECD9EF /* SwiftFFmpeg */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 01420E8E2370B14100D98D7A /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */;
+			package = 01623E9E23830CB800ECD9EF /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */;
 			productName = SwiftFFmpeg;
 		};
 /* End XCSwiftPackageProductDependency section */

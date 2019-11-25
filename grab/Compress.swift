@@ -23,11 +23,12 @@ class Compress {
     let codec = kCMVideoCodecType_H264
     var width: Int
     var height: Int
+    var iccData: CFData?
     var basePath: String
     var frameCount = 0
     
     var vtCompressionSession: VTCompressionSession?
-    var formatHint: CMFormatDescription?
+    var formatDescription: CMFormatDescription?
 
     var writer: Writer?
 
@@ -37,18 +38,22 @@ class Compress {
         self.width = width
         self.height = height
         self.basePath = basePath
+        
+        iccData = NSScreen.main?.colorSpace?.cgColorSpace?.copyICCData()
+
+        var extensions = [String: CFData]() as CFDictionary
+        
+        if (iccData != nil) {
+            extensions = [ kCMFormatDescriptionExtension_ICCProfile : iccData! ] as CFDictionary
+        }
 
         CMVideoFormatDescriptionCreate(
             allocator: nil,
             codecType: codec,
             width: Int32(width),
             height: Int32(height),
-            extensions: [
-                kCMFormatDescriptionExtension_ColorPrimaries: kCMFormatDescriptionColorPrimaries_ITU_R_709_2,
-                kCMFormatDescriptionExtension_TransferFunction: kCMFormatDescriptionTransferFunction_ITU_R_709_2,
-                kCMFormatDescriptionExtension_YCbCrMatrix: kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2,
-                ] as CFDictionary,
-            formatDescriptionOut: &formatHint)
+            extensions: extensions,
+            formatDescriptionOut: &formatDescription)
     }
     
     func start() {
@@ -78,7 +83,11 @@ class Compress {
         
         vtCompressionSession = compressionSessionOut.pointee.unsafelyUnwrapped
         
-        writer = Writer(outputURL: URL(fileURLWithPath: "\(basePath)/grab-\(Date()).mp4"), formatHint: formatHint!)
+        if (iccData != nil) {
+            VTSessionSetProperty(vtCompressionSession!, key: kVTCompressionPropertyKey_ICCProfile, value: iccData as CFTypeRef)
+        }
+
+        writer = Writer(outputURL: URL(fileURLWithPath: "\(basePath)/grab-\(Date()).mov"), formatDescription: formatDescription!)
 
         running = true
     }
@@ -106,7 +115,7 @@ class Compress {
         let status = VTCompressionSessionEncodeFrame(
             vtCompressionSession!,
             imageBuffer: pixelBuffer,
-            presentationTimeStamp: CMTime(value: CMTimeValue(frameCount), timescale: 60),
+            presentationTimeStamp: CMTime(value: CMTimeValue(frameCount), timescale: 600),
             duration: CMTime.invalid,
             frameProperties: nil,
             infoFlagsOut: nil) { (status, infoFlags, cmSampleBuffer) in
