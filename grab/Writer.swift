@@ -25,7 +25,7 @@ class Writer {
             fileType: AVFileType.mov)
 
         avAssetWriter.add(avAssetWriterInput)
-        
+        avAssetWriter.movieFragmentInterval = CMTime(value: 1, timescale: 600)
         avAssetWriter.startWriting()
         avAssetWriter.startSession(atSourceTime: CMTime.zero)
     }
