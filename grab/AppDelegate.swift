@@ -40,7 +40,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     }
     
     func setup() {
-        grab = Grab(displayDelegate: self, basePath: "/Users/nick/Temp")
+        grab = Grab(displayDelegate: self)
     }
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
