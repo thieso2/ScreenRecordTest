@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0119B0C82395BFB700AEBFF9 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 0119B0C72395BFB700AEBFF9 /* lib */; };
 		01395F0B239592C200DA0303 /* SwiftFFmpeg in Frameworks */ = {isa = PBXBuildFile; productRef = 01395F0A239592C200DA0303 /* SwiftFFmpeg */; };
 		F06F060E23545D230061A84E /* TODO.rtf in Resources */ = {isa = PBXBuildFile; fileRef = F06F060D23545D230061A84E /* TODO.rtf */; };
 		F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F088134B217DE4EF003929A6 /* AppDelegate.swift */; };
@@ -19,6 +20,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0119B0C72395BFB700AEBFF9 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
 		0197D5912395BDF800C7027B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
 		F06F060D23545D230061A84E /* TODO.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = TODO.rtf; sourceTree = "<group>"; };
 		F0881348217DE4EF003929A6 /* grab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = grab.app; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -48,6 +50,7 @@
 		F088133F217DE4EF003929A6 = {
 			isa = PBXGroup;
 			children = (
+				0119B0C72395BFB700AEBFF9 /* lib */,
 				F06F060D23545D230061A84E /* TODO.rtf */,
 				0197D5912395BDF800C7027B /* README.md */,
 				F088134A217DE4EF003929A6 /* grab */,
@@ -151,6 +154,7 @@
 			files = (
 				F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */,
 				F0881351217DE4F0003929A6 /* MainMenu.xib in Resources */,
+				0119B0C82395BFB700AEBFF9 /* lib in Resources */,
 				F06F060E23545D230061A84E /* TODO.rtf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
