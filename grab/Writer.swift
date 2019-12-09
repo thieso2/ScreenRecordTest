@@ -92,9 +92,12 @@ class Writer {
 
         try! formatContext.openOutput(url: outputPath, flags: .write)
 
-        try! formatContext.writeHeader(options: ["movflags": "write_colr+prefer_icc+allow_small_timescale"])
+        try! formatContext.writeHeader(options: ["movflags": "write_colr+prefer_icc+allow_small_timescale+frag_custom+faststart",
+                                                 "use_editlist": "0"])
 
         open = true
+
+        playerDelegate?.mediaAvailable(outputURL)
     }
 
     private func getParamsSize(_ description:CMFormatDescription) -> UInt32 {
@@ -245,12 +248,13 @@ class Writer {
         if (CFArrayGetCount(attachmentsArray) > 0) {
             let element = CFArrayGetValueAtIndex(attachmentsArray, 0)
             let dict:CFDictionary = unsafeBitCast(element, to: CFDictionary.self)
-            
-            if let ptr = CFDictionaryGetValue(dict, Unmanaged.passUnretained(kCMSampleAttachmentKey_NotSync).toOpaque()) {
-                let notSync = Unmanaged<NSNumber>.fromOpaque(ptr).takeUnretainedValue()
+
+            let boolPtr = UnsafeMutablePointer<UnsafeRawPointer?>.allocate(capacity: 0)
+
+            if (CFDictionaryGetValueIfPresent(dict, Unmanaged.passUnretained(kCMSampleAttachmentKey_NotSync).toOpaque(), boolPtr) == true) {
+                let notSync = Unmanaged<NSNumber>.fromOpaque(boolPtr.pointee!).takeUnretainedValue()
                 isKeyframe = !notSync.boolValue
-            }
-            else {
+            } else {
                 isKeyframe = true
             }
         }
@@ -281,6 +285,7 @@ class Writer {
 
         if (isKeyframe) {
             pkt.flags = AVPacket.Flag(rawValue: (pkt.flags.rawValue | AVPacket.Flag.key.rawValue))
+            logPacket(pkt, formatContext)
         }
 
         try! copyReplaceLengthCodes(sampleBuffer, lengthCodeSize: UInt32(lengthCodeSize), outBuf: outBuf, outBufSize: UInt32(pkt.size))
@@ -300,18 +305,26 @@ class Writer {
 
             // logPacket(pkt, formatContext)
 
-            try! formatContext.interleavedWriteFrame(pkt)
+            try! formatContext.writeFrame(pkt)
             framesWritten += 1
         }
     }
     
+    func flush() {
+        guard open else { return }
+        try! formatContext.writeFrame(nil)
+        print("Muxer flushed!")
+        playerDelegate?.mediaFlushed()
+    }
+
     func close() {
 
         guard open else { return }
         open = false
         
         try! formatContext.writeTrailer()
-        
-        playerDelegate?.urlAvailable(outputURL)
+        formatContext.pb?.flush()
+        formatContext.flush()
+        print("Trailer written!")
     }
 }

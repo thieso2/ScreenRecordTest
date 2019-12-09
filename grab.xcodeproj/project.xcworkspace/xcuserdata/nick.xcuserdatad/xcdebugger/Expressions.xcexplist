@@ -3,6 +3,14 @@
    version = "1.0">
    <ContextStates>
       <ContextState
+         contextName = "AppDelegate.reloadPlayer(_:):AppDelegate.swift">
+         <PersistentStrings>
+            <PersistentString
+               value = "playerItem.duration">
+            </PersistentString>
+         </PersistentStrings>
+      </ContextState>
+      <ContextState
          contextName = "Writer.init(outputURL:formatHint:):Writer.swift">
          <PersistentStrings>
             <PersistentString

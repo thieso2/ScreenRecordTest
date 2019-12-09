@@ -40,9 +40,12 @@ class AppDelegate: NSObject, NSApplicationDelegate {
     @IBAction func reloadPlayer(_ sender: Any) {
         guard outputURL != nil else { return }
 
-        print("\(outputURL!) is being loaded")
-        let playerItem = AVPlayerItem(url: outputURL!)
-        player?.replaceCurrentItem(with: playerItem)
+        if grab.running {
+            grab.flush()
+        } else {
+            let playerItem = AVPlayerItem(url: outputURL!)
+            player?.replaceCurrentItem(with: playerItem)
+        }
     }
 
     @IBAction func showCompress(_ sender: Any) {
@@ -87,17 +90,33 @@ class AppDelegate: NSObject, NSApplicationDelegate {
    }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
-        if let _: AVPlayer = object as? AVPlayer, keyPath == #keyPath(AVPlayer.currentItem.status) || keyPath == #keyPath(AVPlayer.status) {
-            
-            let newStatus: AVPlayerItem.Status
-            
-            if let newStatusAsNumber = change?[NSKeyValueChangeKey.newKey] as? NSNumber {
-                newStatus = AVPlayerItem.Status(rawValue: newStatusAsNumber.intValue)!
-            } else {
-                newStatus = .unknown
+        if let _: AVPlayer = object as? AVPlayer {
+            if keyPath == #keyPath(AVPlayer.currentItem.status) {
+                let newStatus: AVPlayerItem.Status
+
+                if let newStatusAsNumber = change?[NSKeyValueChangeKey.newKey] as? NSNumber {
+                    newStatus = AVPlayerItem.Status(rawValue: newStatusAsNumber.intValue)!
+                } else {
+                    newStatus = .unknown
+                }
+                if newStatus == .readyToPlay {
+                    print("Duration: \(player!.currentItem!.duration.seconds)")
+                    player!.currentItem!.seek(to: player!.currentItem!.duration) { (result) in
+                        print("seek result: \(result)")
+                    }
+                }
             }
-            if newStatus == .failed {
-                print("Error: \(String(describing: self.player?.currentItem?.error?.localizedDescription)), error: \(String(describing: self.player?.currentItem?.error))")
+            if keyPath == #keyPath(AVPlayer.status) || keyPath == #keyPath(AVPlayer.currentItem.status) {
+                let newStatus: AVPlayerItem.Status
+                
+                if let newStatusAsNumber = change?[NSKeyValueChangeKey.newKey] as? NSNumber {
+                    newStatus = AVPlayerItem.Status(rawValue: newStatusAsNumber.intValue)!
+                } else {
+                    newStatus = .unknown
+                }
+                if newStatus == .failed {
+                    print("Error: \(String(describing: self.player?.currentItem?.error?.localizedDescription)), error: \(String(describing: self.player?.currentItem?.error))")
+                }
             }
         }
     }
@@ -142,6 +161,8 @@ extension AppDelegate: DisplayDelegate {
     func frameCompressed(_ cmSampleBuffer: CMSampleBuffer) {
         framesCompressed += 1
 
+        print("grabbed: \(framesGrabbed), compressed: \(framesCompressed)")
+
         guard compressedWindow.isVisible else { return }
 
         sampleBufferDisplay.enqueue(cMSamplebuffer: cmSampleBuffer)
@@ -149,8 +170,13 @@ extension AppDelegate: DisplayDelegate {
 }
 
 extension AppDelegate: PlayerDelegate {
-    func urlAvailable(_ url: URL) {
+    func mediaAvailable(_ url: URL) {
         print("\(url.absoluteString) is available")
         outputURL = url
+    }
+
+    func mediaFlushed() {
+        let playerItem = AVPlayerItem(url: outputURL!)
+        player?.replaceCurrentItem(with: playerItem)
     }
 }

@@ -18,7 +18,8 @@ protocol DisplayDelegate {
 }
 
 protocol PlayerDelegate {
-    func urlAvailable(_ url: URL)
+    func mediaAvailable(_ url: URL)
+    func mediaFlushed()
 }
 
 class Grab {
@@ -81,5 +82,10 @@ class Grab {
         displayStream.stop()
         compress.stop(sender)
         running = false
+    }
+
+    func flush() {
+        guard running else { return }
+        compress.flush()
     }
 }

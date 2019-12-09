@@ -84,15 +84,19 @@ class Compress {
             outputCallback: nil,
             refcon: nil,
             compressionSessionOut: compressionSessionOut)
-
+        
         assert(status == noErr)
 
         vtCompressionSession = compressionSessionOut.pointee.unsafelyUnwrapped
         
+        VTSessionSetProperty(vtCompressionSession!, key: kVTCompressionPropertyKey_MaxKeyFrameInterval, value: 15 as CFTypeRef)
+        VTSessionSetProperty(vtCompressionSession!, key: kVTCompressionPropertyKey_AllowFrameReordering, value: false as CFTypeRef)
+
         if (iccData != nil) {
             VTSessionSetProperty(vtCompressionSession!, key: kVTCompressionPropertyKey_ICCProfile, value: iccData as CFTypeRef)
         }
 
+        
         writer = Writer(self.playerDelegate, outputURL: URL(fileURLWithPath: "/tmp/grab-\(Date().timeIntervalSince1970).mov"), formatDescription: formatDescription!)
 
         running = true
@@ -135,5 +139,11 @@ class Compress {
         assert(status == noErr)
 
         frameCount += 1
+    }
+    
+    func flush() {
+        guard running else { return }
+        
+        writer?.flush()
     }
 }
