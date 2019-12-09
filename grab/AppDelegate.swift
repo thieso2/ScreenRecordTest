@@ -9,12 +9,14 @@
 import Cocoa
 import CoreMediaIO
 import VideoToolbox
+import AVKit
 
 @NSApplicationMain
 class AppDelegate: NSObject, NSApplicationDelegate {
 
     @IBOutlet weak var grabbedWindow: NSWindow!
     @IBOutlet weak var compressedWindow: NSWindow!
+    @IBOutlet weak var playerWindow: NSWindow!
     @IBOutlet weak var liveImage: NSImageView!
     @IBOutlet weak var sampleBufferDisplay: DisplayLayer!
     
@@ -29,10 +31,23 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         grabbedWindow.makeKeyAndOrderFront(self)
     }
     
+    @IBAction func showPlayer(_ sender: Any) {
+        playerWindow.makeKeyAndOrderFront(self)
+    }
+    
+    @IBAction func reloadPlayer(_ sender: Any) {
+        if let avPlayer = playerWindow.contentView as? AVPlayerView,
+            let outputURL = outputURL {
+            avPlayer.player = AVPlayer(url: outputURL)
+        }
+    }
+
     @IBAction func showCompress(_ sender: Any) {
         compressedWindow.makeKeyAndOrderFront(self)
 
     }
+    
+    var outputURL: URL?
     
     @IBAction func startstop(_ sender: Any) {
         if grab.running {
@@ -40,8 +55,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
             grab.stop()
         } else {
             grab.start()
+            outputURL = URL(fileURLWithPath: "/tmp/grab-\(Date()).mov")
+
             writer = Writer(
-                outputURL: URL(fileURLWithPath: "/tmp/grab-\(Date()).mov"),
+                outputURL: outputURL!,
                 formatHint: compress!.formatHint!)
         }
     }

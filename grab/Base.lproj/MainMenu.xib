@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="14460.30.1" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
+<document type="com.apple.InterfaceBuilder3.Cocoa.XIB" version="3.0" toolsVersion="15505" targetRuntime="MacOSX.Cocoa" propertyAccessControl="none" useAutolayout="YES" customObjectInstantitationMethod="direct">
     <dependencies>
         <deployment identifier="macosx"/>
-        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="14460.30.1"/>
+        <plugIn identifier="com.apple.InterfaceBuilder.CocoaPlugin" version="15505"/>
         <capability name="documents saved in the Xcode 8 format" minToolsVersion="8.0"/>
     </dependencies>
     <objects>
@@ -18,6 +18,7 @@
                 <outlet property="compressedWindow" destination="N1g-sd-oWR" id="nG6-EV-Bpr"/>
                 <outlet property="grabbedWindow" destination="QvC-M9-y7g" id="gIp-Ho-8D9"/>
                 <outlet property="liveImage" destination="QWQ-tL-x67" id="H0r-Fk-bJ7"/>
+                <outlet property="playerWindow" destination="yIU-NX-yc0" id="WdS-wM-Q81"/>
                 <outlet property="sampleBufferDisplay" destination="OxZ-wN-mQs" id="qi4-hj-kom"/>
             </connections>
         </customObject>
@@ -31,6 +32,11 @@
                             <menuItem title="startstop" keyEquivalent="r" id="y1f-Hl-oN6">
                                 <connections>
                                     <action selector="startstop:" target="Voe-Tx-rLC" id="kaK-sq-NcU"/>
+                                </connections>
+                            </menuItem>
+                            <menuItem title="reload Player" keyEquivalent="e" id="kj3-JS-noL">
+                                <connections>
+                                    <action selector="reloadPlayer:" target="Voe-Tx-rLC" id="YRN-Jj-uL4"/>
                                 </connections>
                             </menuItem>
                             <menuItem isSeparatorItem="YES" id="4je-JR-u6R"/>
@@ -79,6 +85,11 @@
                                     <action selector="showCompress:" target="Voe-Tx-rLC" id="itA-BT-l9b"/>
                                 </connections>
                             </menuItem>
+                            <menuItem title="show player" keyEquivalent="3" id="k3g-tu-FvP">
+                                <connections>
+                                    <action selector="showPlayer:" target="Voe-Tx-rLC" id="NcQ-9X-TMl"/>
+                                </connections>
+                            </menuItem>
                         </items>
                     </menu>
                 </menuItem>
@@ -92,7 +103,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="335" y="390" width="480" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <view key="contentView" wantsLayer="YES" id="EiT-Mj-1SZ">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -110,7 +121,7 @@
             <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
             <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
             <rect key="contentRect" x="163" y="199" width="480" height="360"/>
-            <rect key="screenRect" x="0.0" y="0.0" width="1440" height="877"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
             <view key="contentView" id="N6i-VQ-qNr">
                 <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
                 <autoresizingMask key="autoresizingMask"/>
@@ -122,6 +133,17 @@
                 </subviews>
             </view>
             <point key="canvasLocation" x="107" y="-502"/>
+        </window>
+        <window title="player" allowsToolTipsWhenApplicationIsInactive="NO" autorecalculatesKeyViewLoop="NO" restorable="NO" deferred="NO" releasedWhenClosed="NO" frameAutosaveName="" animationBehavior="default" id="yIU-NX-yc0" userLabel="Player">
+            <windowStyleMask key="styleMask" titled="YES" closable="YES" miniaturizable="YES" resizable="YES"/>
+            <windowPositionMask key="initialPositionMask" leftStrut="YES" rightStrut="YES" topStrut="YES" bottomStrut="YES"/>
+            <rect key="contentRect" x="163" y="199" width="480" height="360"/>
+            <rect key="screenRect" x="0.0" y="0.0" width="1680" height="1027"/>
+            <view key="contentView" id="K2M-pe-nJz" customClass="AVPlayerView">
+                <rect key="frame" x="0.0" y="0.0" width="480" height="360"/>
+                <autoresizingMask key="autoresizingMask"/>
+            </view>
+            <point key="canvasLocation" x="-31" y="-57"/>
         </window>
         <menuItem title="File" id="efK-FP-OI5">
             <modifierMask key="keyEquivalentModifierMask"/>
