@@ -19,12 +19,12 @@ protocol CompressDelegate {
 
 class Compress {
     var displayDelegate:DisplayDelegate?
+    var playerDelegate:PlayerDelegate?
 
     let codec = kCMVideoCodecType_H264
     var width: Int
     var height: Int
     var iccData: CFData?
-    var basePath: String
     var frameCount = 0
     
     var vtCompressionSession: VTCompressionSession?
@@ -34,10 +34,16 @@ class Compress {
 
     var running = false
 
-    init(width: Int, height: Int, basePath: String) {
+    init(_ displayDelegate:DisplayDelegate?, _ playerDelegate:PlayerDelegate?, width: Int, height: Int) {
+        
+        // support sending compressed frames for display
+        self.displayDelegate = displayDelegate
+        
+        // support sending notification of new URL available for playback
+        self.playerDelegate = playerDelegate
+
         self.width = width
         self.height = height
-        self.basePath = basePath
         
         iccData = NSScreen.main?.colorSpace?.cgColorSpace?.copyICCData()
 
@@ -80,17 +86,18 @@ class Compress {
             compressionSessionOut: compressionSessionOut)
 
         assert(status == noErr)
+
         vtCompressionSession = compressionSessionOut.pointee.unsafelyUnwrapped
         
         if (iccData != nil) {
             VTSessionSetProperty(vtCompressionSession!, key: kVTCompressionPropertyKey_ICCProfile, value: iccData as CFTypeRef)
         }
 
-        writer = Writer(outputURL: URL(fileURLWithPath: "\(basePath)/grab-\(Date()).mov"), formatDescription: formatDescription!)
+        writer = Writer(self.playerDelegate, outputURL: URL(fileURLWithPath: "/tmp/grab-\(Date().timeIntervalSince1970).mov"), formatDescription: formatDescription!)
 
         running = true
     }
-
+    
     func stop(_ sender: NSApplication? = nil) {
         guard running else { return }
         

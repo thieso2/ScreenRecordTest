@@ -17,17 +17,24 @@ protocol DisplayDelegate {
     func frameCompressed(_ sampleBuffer: CMSampleBuffer)
 }
 
+protocol PlayerDelegate {
+    func urlAvailable(_ url: URL)
+}
+
 class Grab {
     var displayDelegate:DisplayDelegate?
-
+    
     var displayStream: CGDisplayStream!
     var compress: Compress!
 
     var frameCount = 0
     var running = false
 
-    init(displayDelegate:DisplayDelegate? = nil, basePath: String? = "/tmp") {
+    init(displayDelegate:DisplayDelegate?, playerDelegate:PlayerDelegate?) {
         
+        // support sending grabbed frames for display
+        self.displayDelegate = displayDelegate
+
         let displayId = CGMainDisplayID()
 
         let shot = CGDisplayCreateImage(displayId)!
@@ -36,6 +43,10 @@ class Grab {
         
         print("\(width)x\(height)")
 
+        // setup compressor
+        compress = Compress(displayDelegate, playerDelegate, width: width, height: height)
+
+        // send grabbed frames to display and compress
         displayStream = CGDisplayStream(
             dispatchQueueDisplay: displayId,
             outputWidth: width,
@@ -56,13 +67,6 @@ class Grab {
                     self.compress.newFrame(surface)
                 }
         }
-        compress = Compress(width: width, height: height, basePath: basePath!)
-
-        // support display of grabbed frames
-        self.displayDelegate = displayDelegate
-
-        // support display of compressed frames
-        compress.displayDelegate = displayDelegate
     }
 
     func start() {
@@ -75,7 +79,7 @@ class Grab {
     func stop(_ sender: NSApplication? = nil) {
         guard running else { return }
         displayStream.stop()
-        self.compress.stop(sender)
+        compress.stop(sender)
         running = false
     }
 }

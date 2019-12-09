@@ -24,7 +24,9 @@ class Writer {
     let filterContext: AVBitStreamFilterContext
     var startCode: [UInt8] = [0, 0, 0, 1]
     let startCodeSize: UInt32 = 4
-    
+    var playerDelegate:PlayerDelegate?
+    var outputURL: URL
+
     private func logPacket(_ pkt: AVPacket, _ formatContext: AVFormatContext) {
 
         print("pts:\(pkt.pts), dts:\(pkt.dts), keyframe: \(pkt.flags.rawValue & AVPacket.Flag.key.rawValue), length:\(pkt.size)")
@@ -42,7 +44,11 @@ class Writer {
         print("")
     }
 
-    init(outputURL: URL, formatDescription: CMFormatDescription) {
+    init(_ playerDelegate:PlayerDelegate?, outputURL: URL, formatDescription: CMFormatDescription) {
+        
+        // support sending notification of new URL available for playback
+        self.playerDelegate = playerDelegate
+        self.outputURL = outputURL
 
         AVLog.level = AVLog.Level.info
 
@@ -143,7 +149,7 @@ class Writer {
         var paramCount: Int = 0
         var nalType: UInt8 = 0
 
-      CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
+        CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
                                                         parameterSetIndex: 0,
                                                         parameterSetPointerOut: nil,
                                                         parameterSetSizeOut: nil,
@@ -305,6 +311,7 @@ class Writer {
         open = false
         
         try! formatContext.writeTrailer()
-        formatContext.flush()
+        
+        playerDelegate?.urlAvailable(outputURL)
     }
 }
