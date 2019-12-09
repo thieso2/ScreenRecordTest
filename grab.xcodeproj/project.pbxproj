@@ -3,10 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 52;
 	objects = {
 
 /* Begin PBXBuildFile section */
+		0119B0C82395BFB700AEBFF9 /* lib in Resources */ = {isa = PBXBuildFile; fileRef = 0119B0C72395BFB700AEBFF9 /* lib */; };
+		01395F0B239592C200DA0303 /* SwiftFFmpeg in Frameworks */ = {isa = PBXBuildFile; productRef = 01395F0A239592C200DA0303 /* SwiftFFmpeg */; };
+		F06F060E23545D230061A84E /* TODO.rtf in Resources */ = {isa = PBXBuildFile; fileRef = F06F060D23545D230061A84E /* TODO.rtf */; };
 		F088134C217DE4EF003929A6 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F088134B217DE4EF003929A6 /* AppDelegate.swift */; };
 		F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = F088134D217DE4F0003929A6 /* Assets.xcassets */; };
 		F0881351217DE4F0003929A6 /* MainMenu.xib in Resources */ = {isa = PBXBuildFile; fileRef = F088134F217DE4F0003929A6 /* MainMenu.xib */; };
@@ -17,6 +20,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		0119B0C72395BFB700AEBFF9 /* lib */ = {isa = PBXFileReference; lastKnownFileType = folder; path = lib; sourceTree = "<group>"; };
+		0197D5912395BDF800C7027B /* README.md */ = {isa = PBXFileReference; lastKnownFileType = net.daringfireball.markdown; path = README.md; sourceTree = "<group>"; };
+		F06F060D23545D230061A84E /* TODO.rtf */ = {isa = PBXFileReference; lastKnownFileType = text.rtf; path = TODO.rtf; sourceTree = "<group>"; };
 		F0881348217DE4EF003929A6 /* grab.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = grab.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		F088134B217DE4EF003929A6 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
 		F088134D217DE4F0003929A6 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
@@ -34,6 +40,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				01395F0B239592C200DA0303 /* SwiftFFmpeg in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -43,6 +50,9 @@
 		F088133F217DE4EF003929A6 = {
 			isa = PBXGroup;
 			children = (
+				0119B0C72395BFB700AEBFF9 /* lib */,
+				F06F060D23545D230061A84E /* TODO.rtf */,
+				0197D5912395BDF800C7027B /* README.md */,
 				F088134A217DE4EF003929A6 /* grab */,
 				F0881349217DE4EF003929A6 /* Products */,
 			);
@@ -88,6 +98,9 @@
 			dependencies = (
 			);
 			name = grab;
+			packageProductDependencies = (
+				01395F0A239592C200DA0303 /* SwiftFFmpeg */,
+			);
 			productName = grab;
 			productReference = F0881348217DE4EF003929A6 /* grab.app */;
 			productType = "com.apple.product-type.application";
@@ -104,6 +117,7 @@
 				TargetAttributes = {
 					F0881347217DE4EF003929A6 = {
 						CreatedOnToolsVersion = 10.0;
+						LastSwiftMigration = 1110;
 						SystemCapabilities = {
 							com.apple.Sandbox = {
 								enabled = 0;
@@ -121,6 +135,9 @@
 				Base,
 			);
 			mainGroup = F088133F217DE4EF003929A6;
+			packageReferences = (
+				01395F09239592C200DA0303 /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */,
+			);
 			productRefGroup = F0881349217DE4EF003929A6 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
@@ -137,6 +154,8 @@
 			files = (
 				F088134E217DE4F0003929A6 /* Assets.xcassets in Resources */,
 				F0881351217DE4F0003929A6 /* MainMenu.xib in Resources */,
+				0119B0C82395BFB700AEBFF9 /* lib in Resources */,
+				F06F060E23545D230061A84E /* TODO.rtf in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -220,13 +239,14 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
 				ONLY_ACTIVE_ARCH = YES;
 				SDKROOT = macosx;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -275,12 +295,13 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				MACOSX_DEPLOYMENT_TARGET = 10.14;
+				MACOSX_DEPLOYMENT_TARGET = 10.13;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
 				SDKROOT = macosx;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -288,20 +309,23 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 6629AD7A87;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = grab/Info.plist;
+				LD_GENERATE_MAP_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = "-L./lib";
 				PRODUCT_BUNDLE_IDENTIFIER = de.tmp8.grab;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Debug;
 		};
@@ -309,20 +333,23 @@
 			isa = XCBuildConfiguration;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
-				CODE_SIGN_IDENTITY = "Mac Developer";
-				CODE_SIGN_STYLE = Automatic;
+				CLANG_ALLOW_NON_MODULAR_INCLUDES_IN_FRAMEWORK_MODULES = NO;
+				CODE_SIGN_IDENTITY = "-";
+				CODE_SIGN_STYLE = Manual;
 				COMBINE_HIDPI_IMAGES = YES;
-				DEVELOPMENT_TEAM = 6629AD7A87;
+				DEVELOPMENT_TEAM = "";
 				INFOPLIST_FILE = grab/Info.plist;
+				LD_GENERATE_MAP_FILE = YES;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
 				MACOSX_DEPLOYMENT_TARGET = 10.13;
+				OTHER_LDFLAGS = "-L./lib";
 				PRODUCT_BUNDLE_IDENTIFIER = de.tmp8.grab;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				PROVISIONING_PROFILE_SPECIFIER = "";
-				SWIFT_VERSION = 4.2;
+				SWIFT_VERSION = 5.0;
 			};
 			name = Release;
 		};
@@ -348,6 +375,25 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		01395F09239592C200DA0303 /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/move37-com/SwiftFFmpeg";
+			requirement = {
+				branch = sidedataicc;
+				kind = branch;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		01395F0A239592C200DA0303 /* SwiftFFmpeg */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 01395F09239592C200DA0303 /* XCRemoteSwiftPackageReference "SwiftFFmpeg" */;
+			productName = SwiftFFmpeg;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = F0881340217DE4EF003929A6 /* Project object */;
 }

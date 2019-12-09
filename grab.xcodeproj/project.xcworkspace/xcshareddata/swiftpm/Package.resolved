@@ -1,0 +1,16 @@
+{
+  "object": {
+    "pins": [
+      {
+        "package": "SwiftFFmpeg",
+        "repositoryURL": "https://github.com/move37-com/SwiftFFmpeg",
+        "state": {
+          "branch": "sidedataicc",
+          "revision": "c571e4695717290d7204139862be10af04128d9b",
+          "version": null
+        }
+      }
+    ]
+  },
+  "version": 1
+}

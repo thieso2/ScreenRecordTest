@@ -18,27 +18,48 @@ protocol CompressDelegate {
 }
 
 class Compress {
-    var delegate: CompressDelegate?
+    var displayDelegate:DisplayDelegate?
+
+    let codec = kCMVideoCodecType_H264
+    var width: Int
+    var height: Int
+    var iccData: CFData?
+    var basePath: String
+    var frameCount = 0
     
-    var vtCompressionSession: VTCompressionSession
-    var formatHint: CMFormatDescription?
-    
-    init(width: Int, height: Int) {
-        let codec = kCMVideoCodecType_H264
+    var vtCompressionSession: VTCompressionSession?
+    var formatDescription: CMFormatDescription?
+
+    var writer: Writer?
+
+    var running = false
+
+    init(width: Int, height: Int, basePath: String) {
+        self.width = width
+        self.height = height
+        self.basePath = basePath
+        
+        iccData = NSScreen.main?.colorSpace?.cgColorSpace?.copyICCData()
+
+        var extensions = [String: CFData]() as CFDictionary
+        
+        if (iccData != nil) {
+            extensions = [ kCMFormatDescriptionExtension_ICCProfile : iccData! ] as CFDictionary
+        }
 
         CMVideoFormatDescriptionCreate(
             allocator: nil,
             codecType: codec,
             width: Int32(width),
             height: Int32(height),
-            extensions: [
-                kCMFormatDescriptionExtension_ColorPrimaries: kCMFormatDescriptionColorPrimaries_ITU_R_709_2,
-                kCMFormatDescriptionExtension_TransferFunction: kCMFormatDescriptionTransferFunction_ITU_R_709_2,
-                kCMFormatDescriptionExtension_YCbCrMatrix: kCMFormatDescriptionYCbCrMatrix_ITU_R_709_2,
-                ] as CFDictionary,
-            formatDescriptionOut: &formatHint)
+            extensions: extensions,
+            formatDescriptionOut: &formatDescription)
+    }
+    
+    func start() {
+        guard !running else { return }
 
-        let compressionSesionOut = UnsafeMutablePointer<VTCompressionSession?>.allocate(capacity: 1)
+        let compressionSessionOut = UnsafeMutablePointer<VTCompressionSession?>.allocate(capacity: 1)
         
         let status = VTCompressionSessionCreate(
             allocator: nil,
@@ -56,39 +77,56 @@ class Compress {
             compressedDataAllocator: nil,
             outputCallback: nil,
             refcon: nil,
-            compressionSessionOut: compressionSesionOut)
-        assert(status == noErr)
-        
-        vtCompressionSession = compressionSesionOut.pointee.unsafelyUnwrapped
+            compressionSessionOut: compressionSessionOut)
 
-        if let iccData = NSScreen.main?.colorSpace?.cgColorSpace?.copyICCData() {
-            print(VTSessionSetProperties(vtCompressionSession, propertyDictionary: [
-                kVTCompressionPropertyKey_ICCProfile: iccData as CFTypeRef
-                ] as CFDictionary))
-        }
-    }
-    
-    var frameNumber = 0
-    
-    func compressFrame(surface: IOSurfaceRef) {
+        assert(status == noErr)
+        vtCompressionSession = compressionSessionOut.pointee.unsafelyUnwrapped
         
+        if (iccData != nil) {
+            VTSessionSetProperty(vtCompressionSession!, key: kVTCompressionPropertyKey_ICCProfile, value: iccData as CFTypeRef)
+        }
+
+        writer = Writer(outputURL: URL(fileURLWithPath: "\(basePath)/grab-\(Date()).mov"), formatDescription: formatDescription!)
+
+        running = true
+    }
+
+    func stop(_ sender: NSApplication? = nil) {
+        guard running else { return }
+        
+        VTCompressionSessionCompleteFrames(vtCompressionSession!, untilPresentationTimeStamp: CMTime())
+
+        writer?.close()
+        if (sender != nil) {
+            sender!.reply(toApplicationShouldTerminate: true)
+        }
+        running = false
+    }
+
+    func newFrame(_ surface: IOSurfaceRef) {
+
+        guard running else { return }
+
         let pixBufferPointer = UnsafeMutablePointer<Unmanaged<CVPixelBuffer>?>.allocate(capacity: 1)
         CVPixelBufferCreateWithIOSurface(nil, surface, nil, pixBufferPointer)
         let pixelBuffer = (pixBufferPointer.pointee?.takeRetainedValue())!
 
         let status = VTCompressionSessionEncodeFrame(
-            vtCompressionSession,
+            vtCompressionSession!,
             imageBuffer: pixelBuffer,
-            presentationTimeStamp: CMTime(value: CMTimeValue(frameNumber), timescale: 600),
+            presentationTimeStamp: CMTime(value: CMTimeValue(frameCount), timescale: 600),
             duration: CMTime.invalid,
             frameProperties: nil,
             infoFlagsOut: nil) { (status, infoFlags, cmSampleBuffer) in
                 guard let sampleBuffer = cmSampleBuffer else { return }
-                self.delegate?.frameCompressed(cmSampleBuffer: sampleBuffer)
-        }
-        
+                DispatchQueue.main.async {
+                    self.displayDelegate?.frameCompressed(sampleBuffer)
+                }
+                try! self.writer!.writeSampleBuffer(sampleBuffer)
+            }
+
         assert(status == noErr)
 
-        frameNumber += 1
+        frameCount += 1
     }
 }

@@ -12,29 +12,27 @@ import AppKit
 import CoreImage
 
 
-protocol GrabDelegate {
-    func screenGrabbed(ioSurface: IOSurfaceRef)
+protocol DisplayDelegate {
+    func screenGrabbed(_ surface: IOSurfaceRef)
+    func frameCompressed(_ sampleBuffer: CMSampleBuffer)
 }
 
 class Grab {
-    var delegate:GrabDelegate?
-    var displayStream: CGDisplayStream?
-    let backgroundQueue = DispatchQueue(label: "de.tmp8", qos: .background, target: nil)
-    let width: Int
-    let height: Int
-    let displayId: CGDirectDisplayID
-    
-    init() {
-        displayId = CGMainDisplayID()
+    var displayDelegate:DisplayDelegate?
 
-        //        let bounds = CGDisplayBounds(displayId)
-        //        width = Int(bounds.width)
-        //        height = Int(bounds.height)
+    var displayStream: CGDisplayStream!
+    var compress: Compress!
 
-        // determine the internal render resolution.
+    var frameCount = 0
+    var running = false
+
+    init(displayDelegate:DisplayDelegate? = nil, basePath: String? = "/tmp") {
+        
+        let displayId = CGMainDisplayID()
+
         let shot = CGDisplayCreateImage(displayId)!
-        width = shot.width
-        height = shot.height
+        let width = shot.width
+        let height = shot.height
         
         print("\(width)x\(height)")
 
@@ -44,23 +42,40 @@ class Grab {
             outputHeight: height,
             pixelFormat: Int32(k32BGRAPixelFormat),
             properties: nil,
-            queue: backgroundQueue) { (status, displayTime, frameSurface, updateRef) in
+            queue: .main) { (status, displayTime, frameSurface, updateRef) in
                 guard let surface = frameSurface else { return }
-                self.delegate?.screenGrabbed(ioSurface: surface)
+                self.frameCount += 1
+                
+                // take every 10th frame
+                if self.frameCount % 10 == 0 {
+
+                    // send for display
+                    self.displayDelegate?.screenGrabbed(surface)
+                    
+                    // send for compression
+                    self.compress.newFrame(surface)
+                }
         }
+        compress = Compress(width: width, height: height, basePath: basePath!)
+
+        // support display of grabbed frames
+        self.displayDelegate = displayDelegate
+
+        // support display of compressed frames
+        compress.displayDelegate = displayDelegate
     }
 
-    var running = false
     func start() {
         guard !running else { return }
-        displayStream?.start()
+        displayStream.start()
+        compress.start()
         running = true
     }
 
-    func stop() {
+    func stop(_ sender: NSApplication? = nil) {
         guard running else { return }
-        displayStream?.stop()
+        displayStream.stop()
+        self.compress.stop(sender)
         running = false
     }
 }
-
