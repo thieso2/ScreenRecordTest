@@ -80,7 +80,6 @@ class Compress {
             compressionSessionOut: compressionSessionOut)
 
         assert(status == noErr)
-        
         vtCompressionSession = compressionSessionOut.pointee.unsafelyUnwrapped
         
         if (iccData != nil) {

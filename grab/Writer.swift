@@ -143,7 +143,7 @@ class Writer {
         var paramCount: Int = 0
         var nalType: UInt8 = 0
 
-        CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
+      CMVideoFormatDescriptionGetH264ParameterSetAtIndex(description,
                                                         parameterSetIndex: 0,
                                                         parameterSetPointerOut: nil,
                                                         parameterSetSizeOut: nil,
