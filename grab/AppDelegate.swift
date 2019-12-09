@@ -87,7 +87,7 @@ class AppDelegate: NSObject, NSApplicationDelegate {
    }
     
     override func observeValue(forKeyPath keyPath: String?, of object: Any?, change: [NSKeyValueChangeKey: Any]?, context: UnsafeMutableRawPointer?) {
-        if let _: AVPlayer = object as? AVPlayer, keyPath == #keyPath(AVPlayer.currentItem.status) {
+        if let _: AVPlayer = object as? AVPlayer, keyPath == #keyPath(AVPlayer.currentItem.status) || keyPath == #keyPath(AVPlayer.status) {
             
             let newStatus: AVPlayerItem.Status
             
