@@ -314,7 +314,6 @@ class Writer {
         guard open else { return }
         try! formatContext.writeFrame(nil)
         print("Muxer flushed!")
-        playerDelegate?.mediaFlushed()
     }
 
     func close() {

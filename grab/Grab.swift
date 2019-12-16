@@ -19,7 +19,6 @@ protocol DisplayDelegate {
 
 protocol PlayerDelegate {
     func mediaAvailable(_ url: URL)
-    func mediaFlushed()
 }
 
 class Grab {

@@ -41,11 +41,10 @@ class AppDelegate: NSObject, NSApplicationDelegate {
         guard outputURL != nil else { return }
 
         if grab.running {
-            grab.flush()
-        } else {
-            let playerItem = AVPlayerItem(url: outputURL!)
-            player?.replaceCurrentItem(with: playerItem)
+            self.grab.flush()
         }
+        let playerItem = AVPlayerItem(url: outputURL!)
+        player?.replaceCurrentItem(with: playerItem)
     }
 
     @IBAction func showCompress(_ sender: Any) {
@@ -78,7 +77,6 @@ class AppDelegate: NSObject, NSApplicationDelegate {
 
     func applicationDidFinishLaunching(_ aNotification: Notification) {
         setup()
-        grab.start()
     }
     
     func applicationShouldTerminate(_ sender: NSApplication) -> NSApplication.TerminateReply {
@@ -173,10 +171,5 @@ extension AppDelegate: PlayerDelegate {
     func mediaAvailable(_ url: URL) {
         print("\(url.absoluteString) is available")
         outputURL = url
-    }
-
-    func mediaFlushed() {
-        let playerItem = AVPlayerItem(url: outputURL!)
-        player?.replaceCurrentItem(with: playerItem)
     }
 }
