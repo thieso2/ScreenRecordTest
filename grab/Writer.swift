@@ -92,8 +92,8 @@ class Writer {
 
         try! formatContext.openOutput(url: outputPath, flags: .write)
 
-        try! formatContext.writeHeader(options: ["movflags": "write_colr+prefer_icc+allow_small_timescale+frag_custom+faststart",
-                                                 "use_editlist": "0"])
+        try! formatContext.writeHeader(options: ["movflags": "write_colr+prefer_icc+allow_small_timescale+frag_custom+global_sidx",
+                                                 "use_editlist": "-1"])
 
         open = true
 
