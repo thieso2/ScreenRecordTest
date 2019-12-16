@@ -105,9 +105,9 @@ class Compress {
     func stop(_ sender: NSApplication? = nil) {
         guard running else { return }
         
-        VTCompressionSessionCompleteFrames(vtCompressionSession!, untilPresentationTimeStamp: CMTime())
-
+        VTCompressionSessionCompleteFrames(vtCompressionSession!, untilPresentationTimeStamp: CMTime.invalid)
         writer?.close()
+
         if (sender != nil) {
             sender!.reply(toApplicationShouldTerminate: true)
         }
@@ -143,7 +143,7 @@ class Compress {
     
     func flush() {
         guard running else { return }
-        
+        VTCompressionSessionCompleteFrames(vtCompressionSession!, untilPresentationTimeStamp: CMTime.invalid)
         writer?.flush()
     }
 }
